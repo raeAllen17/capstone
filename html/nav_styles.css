@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* {
+    font-family: Poppins;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+nav {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+    max-height: 7vh;   
+    background-color: transparent;
+    position: fixed;
+    z-index: 1000;
+    transition: background-color 0.3s ease;
+}
+
+nav.scrolled {
+    background-color: white;
+}
+
+.navbar {
+    padding:0;
+    list-style-type: none;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo {
+    background: url('http://localhost/JOYn/JOYn/imgs/logo.png') no-repeat center center;
+    background-size: contain;  
+    border: none;             
+    width: 100px;              
+    height: 50px;              
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.5);
+}
+
+.navbar a {
+    text-decoration: none;
+    color: black;
+    transition: font-size 0.3s ease;
+    max-width: 150px;
+    height: 7vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 15px;
+}
+
+.navbar a:hover {
+    text-decoration: underline;
+    color: #9e9b9b; 
+    font-size: 1.2em;
+}
+
+
+
+.nav_right {
+    display: flex;
+    justify-content: flex-end;
+
+    margin: 2vh;
+    padding:0px;
+}
+
+.nav_right input {
+    margin: 0vh 2vh 0vh 2vh;
+}
+
+.searchBar {
+    color: rgb(236, 236, 236);
+    background-color: #9e9b9b;
+    width: 30vh;
+    padding: 7px;
+    border: 1px solid #9e9b9b;
+    border-radius: 50px;
+}
+
+input::placeholder {
+    color: rgb(255, 255, 255);
+}
+
+.signup_button {
+    border-style: none;
+    text-decoration-line: underline;
+    font-size: 1.8vh;
+    background-color: transparent;
+    cursor: pointer;
+}
+
