@@ -1,3 +1,19 @@
+<?php 
+
+    require "../html/includes/dbCon.php";
+    $error_message="";
+    $successful_message="";
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        require_once "../html/includes/formHandler.php";
+        
+        $result = registerUser($pdo, $_POST);
+        $error_message = $result['message'];
+        $successful_message= $result['success_message'];
+        
+        $pdo = null;
+    } else {
+    }
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,16 +22,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JOYn</title>
 
-    <link rel="stylesheet" type="text/css" href="nav_styles.css"> 
-    <link rel="stylesheet" type="text/css" href="landing_page.css">
+    <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
+    <link rel="stylesheet" type="text/css" href="../css/landing_page.css">
 </head>
 <body>
-    <div id="toast" style="display: none; position: fixed; bottom: 30px; right: 30px; background-color: red; color: white; padding: 15px; border-radius: 5px;">
-        <span id="toastMessageBad"></span> <!-- Change ID to toastMessageBad -->
-    </div>
-    <div id="good_toast" style="display: none; position: fixed; bottom: 30px; right: 30px; background-color: green; color: white; padding: 15px; border-radius: 5px;">
-        <span id="toastMessageGood"></span> <!-- Change ID to toastMessageGood -->
-    </div>
     <!-- NAVBAR START -->
     <nav id="nav">
         <div class="nav_left">
@@ -232,7 +242,7 @@
                     <form method="POST" action="" autocomplete="off" onsubmit="return validatePassword();">
                         <div id="input_group">
                             <input type="text" name="firstname" placeholder="Firstname" required class="joiner_registration">
-                            <input type="text" name="Lastname" placeholder="Lastname" required class="joiner_registration">
+                            <input type="text" name="lastname" placeholder="Lastname" required class="joiner_registration">
                             <input type="password" name="password" placeholder="Password" id="password" required class="joiner_registration" minlength="9">
                             <input type="password" name="cpassword" placeholder="Confirm Password" id="cpassword" required class="joiner_registration" minlength="9">
                             <input type="email" name="email" placeholder="Email Address" required class="joiner_registration">
@@ -252,8 +262,8 @@
                                 pattern="^[a-zA-Z\s]+,\s[a-zA-Z\s]+,\s[a-zA-Z\s]+$">
                             <input type="tel" name="contactnumber" placeholder="Contact Number" required class="joiner_registration"  maxlength="11" pattern="\d{11}"
                                 onkeypress="return event.charCode >= 48 && event.charCode <= 57">
-                            <input type="text" name="emergencycontactname" placeholder="Emergency Contact Name" required class="joiner_registration">
-                            <input type="text" name="emergencycontactperson" placeholder="Emergency Contact Number" required class="joiner_registration" 
+                            <input type="text" name="emergencyConName" placeholder="Emergency Contact Name" required class="joiner_registration">
+                            <input type="text" name="emergencyConNumber" placeholder="Emergency Contact Number" required class="joiner_registration" 
                                 maxlength="11" pattern="\d{11}"
                                 onkeypress="return event.charCode >= 48 && event.charCode <= 57"> 
                         </div>   
@@ -293,6 +303,12 @@
         </div>
         <!-- END OF MODAL DIALOGUES -->
 
+        <div id="toast" style="display: none; position: fixed; background-color:red; color: white; padding: 10px; border-radius: 5px; bottom: 20px; right: 20px;">
+            <span id="toast-message"></span>
+        </div>
+        <div id="good_toast" style="display: none; position: fixed; background-color:green; color: white; padding: 10px; border-radius: 5px; bottom: 20px; right: 20px;">
+            <span id="good-toast-message"></span>
+        </div>
         <script>
             function validatePassword() {
                 let pw = document.getElementById("password").value;
@@ -376,6 +392,29 @@
             window.addEventListener('scroll', handleScroll);
             //NAVBAR END
 
+            //toast 
+            const errorMessage = "<?php echo addslashes($error_message); ?>";
+            const successMessage = "<?php echo addslashes($successful_message); ?>";
+
+            if (errorMessage) {
+                const errorToast = document.getElementById('toast');
+                const errorToastMessage = document.getElementById('toast-message');
+                errorToastMessage.innerText = errorMessage;
+                errorToast.style.display = 'block';
+                setTimeout(() => {
+                    errorToast.style.display = 'none';
+                }, 3000);
+            }
+
+            if (successMessage) {
+                const successToast = document.getElementById('good_toast');
+                const successToastMessage = document.getElementById('good-toast-message');
+                successToastMessage.innerText = successMessage;
+                successToast.style.display = 'block';
+                setTimeout(() => {
+                    successToast.style.display = 'none';
+                }, 3000);
+            }
         </script>
     </div>
 
