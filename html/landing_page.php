@@ -1,17 +1,18 @@
 <?php 
-
+    session_start();
     require "../html/includes/dbCon.php";
     $error_message="";
     $successful_message="";
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         require_once "../html/includes/formHandler.php";
         
-        $result = registerUser($pdo, $_POST);
-        $error_message = $result['message'];
-        $successful_message= $result['success_message'];
-        
-        $pdo = null;
-    } else {
+        if (isset($_POST['register_joiner_submit'])) {
+            $result = registerUser ($pdo, $_POST);
+            $error_message = $result['message'];
+            $successful_message = $result['success_message'];
+        } elseif (isset($_POST['register_organizer_submit'])) {    
+
+        }
     }
 ?>
 <!DOCTYPE html>
