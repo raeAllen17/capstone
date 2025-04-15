@@ -1,6 +1,7 @@
 <?php 
     session_start();
     require "../html/includes/dbCon.php";
+    require "../html/includes/formHandler.php";
     $error_message="";
     $successful_message="";
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -8,12 +9,19 @@
         
         if (isset($_POST['register_joiner_submit'])) {
             $result = registerUser ($pdo, $_POST);
-            $error_message = $result['message'];
-            $successful_message = $result['success_message'];
         } elseif (isset($_POST['register_organizer_submit'])) {    
-
+            $result = registerOrg($pdo, $_POST);
         }
     }
+
+    if (isset($_SESSION['success_message'])) {
+        $successful_message = $_SESSION['success_message'];
+        unset($_SESSION['success_message']);
+    } else if (isset($_SESSION['failed_message'])){
+        $error_message = $_SESSION['failed_message'];
+        unset($_SESSION['failed_message']);
+    }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -293,7 +301,7 @@
                         <input type="text" name="orgadd" placeholder="Brgy-Locality-Province" required pattern="^[a-zA-Z\s]+,\s[a-zA-Z\s]+,\s[a-zA-Z\s]+$">
                         <input type="tel" name="orgnumber" placeholder="Contact Number" required maxlength="11" pattern="\d{11}"
                         onkeypress="return event.charCode >= 48 && event.charCode <= 57">
-                        <input type="file" name="orgpdf[]" accept=".pdf" multiple required class="uploadBtn">
+                        <input type="file" name="orgpdf[]" accept="image/*" multiple required class="uploadBtn">
                         <div style="width: 100%; position: relative; left: 100px; margin-top: 10px; margin-bottom: 10px;">
                             <button class="submit_button" type="submit" name="register_organizer_submit">Submit</button>
                         </div>         

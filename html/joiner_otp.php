@@ -1,10 +1,44 @@
 <?php 
-
+session_start();
+$email = $_SESSION['email'];
 if (!isset($_SESSION['email'])) {
     header("Location: landing_page.php"); 
     exit();
 } else {
-    
+
+    require "../html/includes/dbCon.php";
+    require "../html/includes/formHandler.php";
+
+    $message = '';
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (isset($_POST['verify_otp'])) {
+            $userData = [
+                'otp' => $_POST['otp']
+            ];
+
+            $result = joiner_otp($pdo, $userData);
+
+            if ($result['success']) {
+                $message = $result['success_message'];
+                header("Location: landing_page.php");
+                exit();
+            } else {
+                $message = $result['failed_message'];
+            }
+        }
+
+        
+        if (isset($_POST['resend_otp'])) {
+            $result = resendOtp($pdo); 
+
+            if ($result['success']) {
+                $message = $result['success_message']; 
+            } else {
+                $message = $result['message'];
+            }
+        }
+    }
 }
 
 ?>
@@ -86,11 +120,11 @@ if (!isset($_SESSION['email'])) {
 </head>
 
 <body>
-    <div class="background"></div> <!-- Background Image with Blur -->
+    <div class="background"></div> 
     <div class="container">
         <h2>VERIFICATION</h2>
         <div class="message">
-            
+            <p><?php echo $message?></p>
         </div>
         <form method="POST" action="">
             <input type="text" name="otp" placeholder="Enter OTP" required pattern="\d{6}" title="Please enter a 6-digit OTP" maxlength="6">
