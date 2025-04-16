@@ -309,3 +309,53 @@ function registerOrg($pdo, $userData){
     }   
     return $result;
 }
+
+function loginUser ($pdo, $email, $password) {
+    
+    $result = [
+        'success' => false,
+        'message' => '',
+        'joiner_fail' => true,
+        'user' => null
+    ];
+
+    $stmt_joiner = $pdo->prepare("SELECT * FROM account_joiner WHERE email = :email");
+    $stmt_joiner->execute(['email' => $email]);
+    $row_joiner = $stmt_joiner->fetch(PDO::FETCH_ASSOC);
+
+    $stmt_organization = $pdo->prepare("SELECT * FROM account_org WHERE orgemail = :email");
+    $stmt_organization->execute(['email' => $email]);
+    $row_organization = $stmt_organization->fetch(PDO::FETCH_ASSOC);
+
+    
+    if ($row_joiner > 0) {
+        if (password_verify($password, $row_joiner["pwd"])) {
+            if ($row_joiner['status'] == 'active'){
+                $result['success'] = true;
+                $result['user'] = $row_joiner;
+            } else {
+                $result['message'] = "The user registration is currently pending.";
+
+                header("location: joiner_otp.php");
+                exit();
+            }
+        } else {
+            $result['message'] = 'Incorrect Password!';
+            
+        }
+    } elseif ($row_organization > 0) {
+        if (password_verify($password, $row_organization["orgpass"])) {
+            if ($row_organization['status'] == 'active') {
+                $result['success'] = true;
+            $result['user'] = $row_organization;
+            } else {
+                
+            }   
+        } else {
+            $result['message'] = 'Incorrect Password!';
+        }
+    } else {
+        $result['message'] = 'User  is not registered';
+    }
+    return $result; 
+}

@@ -228,7 +228,7 @@
                 <h3 style="font-size:2em;">Sign up as</h3>
                 <button class = "modal_selection_button" onclick="openModal('organizer_modal', event)">Organizer</button>
                 <button class = "modal_selection_button" onclick="openModal('joiner_modal', event)">Joiner</button>
-                <h4 style="font-size: 0.8em;">Already has an account? <button onclick="window.location.href=window.location.href='login.php';" 
+                <h4 style="font-size: 0.8em;">Already has an account? <button onclick="window.location.href=window.location.href='login_page.php';" 
                 style="background: none; border: none; color: blue; cursor: pointer; text-decoration: underline; padding: 3px;">Click here</button> to login.</h4>
                 <p>
                     Choose "Joiner" if you are enthusiast wishing to participate in activities. However, if you own
