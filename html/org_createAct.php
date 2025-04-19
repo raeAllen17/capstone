@@ -9,9 +9,7 @@
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
 
     <style>
-        body {
-            
-        }
+
         .file-upload {
             background-color: gray;
             height: 428px;
@@ -117,65 +115,64 @@
     <div class="container" style=" padding-top: 7vh; display: flex; justify-content: center; background-color: lightgrey; height: 100vh; position: relative;">
         <div class="content" style="padding: 50px;">
             <h1 style=" margin-bottom: 10px; font-size: 2.4em;">Create your own Activity and feel the Thrill!</h1>
-            <form action="">
+            <form action="includes/submit_activity.php" method="POST" enctype="multipart/form-data">
                 <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 30px; border: 2px solid black; border-radius: 20px; width: 1200px; background-color: white;">
                     <div class="left" style="display: flex; flex-direction: column; justify-content: space-between; gap: 20px;">
                         <div>
                             <p>Activity Name</p>
-                            <input type="text" class="input_fields">
+                            <input type="text" class="input_fields" name="activity_name" required>
                         </div>
                         <div style="width:100%; position: relative;">
                             <p>Images</p>
                             <div class="file-upload" onclick="document.getElementById('image').click();" style=" width:100%;">
-                            <img src="../imgs/icon_image.png" alt="" style=" height: 100px; width: 100px;">
+                                <img src="../imgs/icon_image.png" alt="" style=" height: 100px; width: 100px;">
                             </div>
-                            <input type="file" name="image" id="image" accept="image/*" multiple onchange="previewImages(event)"> 
+                            <input type="file" name="images[]" id="image" accept="image/*" multiple onchange="previewImages(event)"> 
                             <div class="slideshow-container" id="slideshowContainer">              
                                 <img id="slideshowImage" src="" alt="" style="display: block;">
                                 <span class="prev" onclick="changeSlide(-1)">&#10094;</span>
                                 <span class="next" onclick="changeSlide(1)">&#10095;</span>
                             </div>                                                            
                         </div>
-                         
                     </div>
                     <div class="right" style=" display: flex; flex-direction: column;">
                         <div style="width: 100%;">
                             <p>Description</p>
-                            <span ><textarea style="width: 100%; border: 2px solid black; border-radius: 10px; resize:none; padding: 20px;" name="" id="" cols="30" rows="10"></textarea></span>
+                            <span>
+                                <textarea style="width: 100%; border: 2px solid black; border-radius: 10px; resize:none; padding: 20px;" name="description" id="" cols="30" rows="10" required></textarea>
+                            </span>
                         </div>
                         <div style=" display: flex; justify-content: space-between; gap: 30px;">
                             <div style="display: flex; flex-direction: column; gap: 20px;">
                                 <div>
                                     <p>Location</p>
-                                    <input type="text" class="input_fields">
+                                    <input type="text" class="input_fields" name="location" required>
                                 </div>
                                 <div>
                                     <p>Date</p>
-                                    <input type="date" class="input_fields">
+                                    <input type="date" class="input_fields" name="date" required>
                                 </div>
                                 <div>
                                     <p>Distance</p>
-                                    <input type="text" class="input_fields">
+                                    <input type="text" class="input_fields" name="distance" required>
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 20px;">
                                 <div>
                                     <p>Difficulty</p>
-                                    <input type="text" class="input_fields">
+                                    <input type="text" class="input_fields" name="difficulty" required>
                                 </div>
                                 <div>
                                     <p>Participants</p>
-                                    <input type="text" class="input_fields">
+                                    <input type="text" class="input_fields" name="participants" required>
                                 </div>
                                 <div style="display: flex; width: 100%; justify-content: flex-end;">
-                                    <button class="blue_buttons">Cancel</button>
-                                    <button class="blue_buttons">Submit</button>
+                                    <button type="button" class="blue_buttons" onclick="window.location.href='previous_page.php'">Cancel</button>
+                                    <button type="submit" class="blue_buttons">Submit</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-                    
                 </div>
             </form>
         </div>
