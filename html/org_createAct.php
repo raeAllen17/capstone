@@ -73,7 +73,7 @@
             right: 0px;
         }
         .blue_buttons {
-            background: linear-gradient(to right, #007BFF, #A020F0); /* Blue to Purple */
+            background: linear-gradient(to right, #5dbb63, #03ac13); /* Blue to Purple */
             border: none;
             color: white;
             padding: 12px 24px;
@@ -106,8 +106,7 @@
             </ul>
         </div>
         <div class="nav_right">   
-            <input type="text" placeholder = "Search" class = "searchBar">
-            <input type="button" class = "signup_button" value="Sign Up" onclick="openModal('modal_selection', event)">
+            <span><?php  ?></span>
         </div>          
     </nav>
     <!--NAVBAR END -->
