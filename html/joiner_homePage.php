@@ -1,3 +1,9 @@
+<?php
+require_once 'includes/dbCon.php';
+require_once 'includes/activity_store.php';
+$data = displayActivity($pdo);
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,6 +39,45 @@
                 <h1 style=" font-size: 2.5em;">Select and join the <br> adventure now!</h1>
                 <div style=" min-width: 1600px; height: 600px; padding: 20px; border: 2px solid black; border-radius: 20px;">
                     <!-- php data here-->
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Activity Name</th>
+                        <th>Description</th>
+                        <th>Location</th>
+                        <th>Date</th>
+                        <th>Distance</th>
+                        <th>Difficulty</th>
+                        <th>Participants</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <?php if ($data['success']):?>
+                        <?php foreach( $data['data'] as $row):?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($row['activity_name']); ?></td>
+                                <td><?php echo htmlspecialchars($row['description']); ?></td>
+                                <td><?php echo htmlspecialchars($row['location']); ?></td>
+                                <td><?php echo htmlspecialchars($row['date']); ?></td>
+                                <td><?php echo htmlspecialchars($row['distance']); ?></td>
+                                <td><?php echo htmlspecialchars($row['difficulty']); ?></td>
+                                <td><?php echo htmlspecialchars($row['participants']); ?></td>
+                                <td>
+                                <a href="activityDetails.php?id=<?php echo htmlspecialchars($row['id']); ?>">
+                                <button>join</button>
+                                </a>
+                                </td>
+
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                        <td colspan="7"><?php echo htmlspecialchars($data['failed_message']); ?></td>
+                        </tr> 
+                    <?php endif; ?> 
+                    </tbody>
+                </table>
+
                 </div>
             </div>
         </div>

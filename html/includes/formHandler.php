@@ -348,6 +348,7 @@ function loginUser ($pdo, $email, $password) {
             if ($row_organization['status'] == 'active') {
                 $result['success'] = true;
             $result['user'] = $row_organization;
+            header("Location: org_createAct.php");
             } else {
                 
             }   

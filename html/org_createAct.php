@@ -1,3 +1,30 @@
+<?php
+session_start();
+require_once 'includes/dbCon.php';
+require_once 'includes/activity_store.php';
+
+$userId = $_SESSION["id"];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['submit'])) {
+        $result=createActivity($pdo, $_POST, $userId);
+    } 
+}
+
+if (isset($_SESSION["id"])) {
+
+    $userId = $_SESSION["id"];
+
+} else {
+
+    // Handle the case where the user ID is not set
+
+    echo "User  ID is not set in the session.";
+
+    exit();
+
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -114,7 +141,7 @@
     <div class="container" style=" padding-top: 7vh; display: flex; justify-content: center; background-color: lightgrey; height: 100vh; position: relative;">
         <div class="content" style="padding: 50px;">
             <h1 style=" margin-bottom: 10px; font-size: 2.4em;">Create your own Activity and feel the Thrill!</h1>
-            <form action="includes/submit_activity.php" method="POST" enctype="multipart/form-data">
+            <form action="" method="POST" enctype="multipart/form-data">
                 <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 30px; border: 2px solid black; border-radius: 20px; width: 1200px; background-color: white;">
                     <div class="left" style="display: flex; flex-direction: column; justify-content: space-between; gap: 20px;">
                         <div>
@@ -166,8 +193,8 @@
                                     <input type="text" class="input_fields" name="participants" required>
                                 </div>
                                 <div style="display: flex; width: 100%; justify-content: flex-end;">
-                                    <button type="button" class="blue_buttons" onclick="window.location.href='previous_page.php'">Cancel</button>
-                                    <button type="submit" class="blue_buttons">Submit</button>
+                                    <button type="button" name="cancel" class="blue_buttons" onclick="window.location.href='org_createAct.php'">Cancel</button>
+                                    <button type="submit" name="submit" class="blue_buttons">Submit</button>
                                 </div>
                             </div>
                         </div>

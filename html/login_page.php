@@ -1,4 +1,5 @@
 <?php
+session_start();
 $error_message = "";
 require_once 'includes/formHandler.php';
 require_once 'includes/dbCon.php';
@@ -15,7 +16,7 @@ if (isset($_POST["submit"])) {
 
         if (isset($result['user']['orgname'])) {
             $_SESSION["orgname"] = $result['user']['orgname'];
-            header("Location: org_activityPage.php");
+            header("Location: org_createAct.php");
         } else {
             header("Location: joiner_homePage.php");
         }
