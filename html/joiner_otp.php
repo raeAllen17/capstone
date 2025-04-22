@@ -71,18 +71,18 @@ if (!isset($_SESSION['email'])) {
             background-image: url('http://localhost/JOYN/JOYn/imgs/landpage_bg.jpg');
             background-size: cover;
             background-position: center;
-            filter: blur(10px);
-            z-index: -1; 
         }
         .container {
             background: white;
-            padding: 20px;
+            padding: 40px;
             border-radius: 20px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 300px;
             text-align: center;
             position: relative; 
-            z-index: 1;
+            background-color: transparent;
+            background: rgba(255, 255, 240, 0.2);
+            backdrop-filter: blur(10px);
         }
         input[type="text"] {
             width: 80%;
@@ -116,23 +116,25 @@ if (!isset($_SESSION['email'])) {
         #continue_button {
             border-radius: 10px;
         }
+
     </style>
 </head>
 
 <body>
     <div class="background"></div> 
-    <div class="container">
-        <h2>VERIFICATION</h2>
-        <div class="message">
-            <p><?php echo $message?></p>
+        <div class="container">
+            <h2>VERIFICATION</h2>
+            <div class="message">
+                <p><?php echo $message?></p>
+            </div>
+            <form method="POST" action="">
+                <input type="text" name="otp" placeholder="Enter OTP" required pattern="\d{6}" title="Please enter a 6-digit OTP" maxlength="6">
+                <button id="continue_button" type="submit" name="verify_otp">Continue</button>
+            </form>
+            <form method="POST" action="" style="margin-top: 10px;">
+                <button id="resendotp_button" type="submit" name="resend_otp">Resend OTP</button>
+            </form>
         </div>
-        <form method="POST" action="">
-            <input type="text" name="otp" placeholder="Enter OTP" required pattern="\d{6}" title="Please enter a 6-digit OTP" maxlength="6">
-            <button id="continue_button" type="submit" name="verify_otp">Continue</button>
-        </form>
-        <form method="POST" action="" style="margin-top: 10px;">
-            <button id="resendotp_button" type="submit" name="resend_otp">Resend OTP</button>
-        </form>
-    </div>
+    
 </body>
 </html>

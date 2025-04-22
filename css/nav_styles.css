@@ -60,7 +60,6 @@ nav.scrolled {
 }
 
 .navbar a:hover {
-    text-decoration: underline;
     color: #9e9b9b; 
     font-size: 1.2em;
 }
@@ -75,28 +74,18 @@ nav.scrolled {
     padding:0px;
 }
 
-.nav_right input {
-    margin: 0vh 2vh 0vh 2vh;
-}
-
-.searchBar {
-    color: rgb(236, 236, 236);
-    background-color: #9e9b9b;
-    width: 30vh;
-    padding: 7px;
-    border: 1px solid #9e9b9b;
-    border-radius: 50px;
-}
-
 input::placeholder {
     color: rgb(255, 255, 255);
 }
 
 .signup_button {
+    position: relative;
     border-style: none;
-    text-decoration-line: underline;
     font-size: 1.8vh;
-    background-color: transparent;
     cursor: pointer;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: transparent;
 }
+
 

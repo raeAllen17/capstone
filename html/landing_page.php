@@ -48,7 +48,6 @@
             </ul>
         </div>
         <div class="nav_right">   
-            <input type="text" placeholder = "Search" class = "searchBar">
             <input type="button" class = "signup_button" value="Sign Up" onclick="openModal('modal_selection', event)">
         </div>          
     </nav>  

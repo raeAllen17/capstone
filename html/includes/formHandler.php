@@ -299,7 +299,7 @@ function registerOrg($pdo, $userData){
 
     if ($stmt->execute([$orgname, $hashed_password, $orgemail, $ceo, $orgadd, $orgnumber, $file_paths_string])){
         $result['success'] = true;
-        $result['success_message'] = "Registration successful!";
+        $result['success_message'] = "Registration is sent for approval!";
         $_SESSION['success_message'] = $result['success_message'];
 
         header("Location: landing_page.php");
@@ -347,10 +347,10 @@ function loginUser ($pdo, $email, $password) {
         if (password_verify($password, $row_organization["orgpass"])) {
             if ($row_organization['status'] == 'active') {
                 $result['success'] = true;
-            $result['user'] = $row_organization;
+                $result['user'] = $row_organization;
             header("Location: org_createAct.php");
             } else {
-                
+                $result['message'] = 'Your account is still pending for approval!';
             }   
         } else {
             $result['message'] = 'Incorrect Password!';

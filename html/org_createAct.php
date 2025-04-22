@@ -179,32 +179,59 @@ if (isset($_SESSION["id"])) {
                                     <input type="date" class="input_fields" name="date" required>
                                 </div>
                                 <div>
-                                    <p>Distance</p>
-                                    <input type="text" class="input_fields" name="distance" required>
+                                <p>Distance</p>
+                                    <div style="position: relative;">
+                                        <input type="number" step="0.1" id="distance_value" style="padding-right: 45px; width: 100%;" class="input_fields" required>
+                                        <select id="distance_unit" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: transparent; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+                                            <option value="km">km</option>
+                                            <option value="miles">miles</option>
+                                        </select>
+                                        <input type="hidden" name="distance" id="combined_distance">
+                                    </div>
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 20px;">
                                 <div>
                                     <p>Difficulty</p>
-                                    <input type="text" class="input_fields" name="difficulty" required>
+                                    <select class="input_fields" name="difficulty" required>
+                                        <option value="" disabled selected>Select difficulty</option>
+                                        <option value="Easy">Easy</option>
+                                        <option value="Moderate">Moderate</option>
+                                        <option value="Challenging">Challenging</option>
+                                        <option value="Difficult">Difficult</option>
+                                        <option value="Expert">Expert</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <p>Participants</p>
-                                    <input type="text" class="input_fields" name="participants" required>
+                                    <input type="number" class="input_fields" name="participants" required>
                                 </div>
-                                <div style="display: flex; width: 100%; justify-content: flex-end;">
+                                <div>
+                                    <p>Pickup Points</p>
+                                    <div style="display: flex; position: relative;">
+                                        <input type="text" id="pickup_input" class="input_fields" style="padding-right: 80px;" placeholder="Enter pickup point">
+                                        <button type="button" id="add_pickup_btn" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; color: black; background-color: transparent; border: none; border-radius: 0 10px 10px 0; cursor: pointer; font-size: 20px;">+</button>
+                                        <button type="button" id="view_pickup_btn" style="position: absolute; right: 45px; top: 0; height: 100%; width: 40px; color: black; background-color: transparent; border: none; cursor: pointer; font-size: 16px;">▼</button>
+                                    </div>
+                                    <div id="pickup_dropdown" style="display: none; position: absolute; background-color: white; border: 1px solid #ddd; max-height: 100px; overflow-y: scroll;width: 300px; z-index: 10; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                                        <ul id="pickup_list" style="list-style: none; padding: 0; margin: 0;"></ul>
+                                    </div>
+                                    <input type="hidden" name="pickup_locations" id="pickup_locations_hidden">
+                                </div>
+                                <div style="display: flex; width: 100%; justify-content: flex-end; border-top: 1px solid black;">
                                     <button type="button" name="cancel" class="blue_buttons" onclick="window.location.href='org_createAct.php'">Cancel</button>
                                     <button type="submit" name="submit" class="blue_buttons">Submit</button>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
+                        </div>           
+                    </div>              
+                </div>              
             </form>
         </div>
         
     </div>
     <script>
+        
         let currentSlideIndex = 0;
         let images = [];
 
@@ -243,6 +270,114 @@ if (isset($_SESSION["id"])) {
         document.getElementById('slideshowImage').addEventListener('click', function() {
             document.getElementById('image').click();
         });
+
+        //DISTANCE FIELD FORMAT
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const value = document.getElementById('distance_value').value;
+            const unit = document.getElementById('distance_unit').value;
+            
+            if (value) {
+                document.getElementById('combined_distance').value = value + ' ' + unit;
+            }
+        });
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+        const addBtn = document.getElementById('add_pickup_btn');
+        const viewBtn = document.getElementById('view_pickup_btn');
+        const pickupInput = document.getElementById('pickup_input');
+        const pickupDropdown = document.getElementById('pickup_dropdown');
+        const pickupList = document.getElementById('pickup_list');
+        const hiddenInput = document.getElementById('pickup_locations_hidden');
+
+        const pickupPoints = [];
+
+        // Add button for input
+        addBtn.addEventListener('click', function() {
+            const point = pickupInput.value.trim();
+            if (point && !pickupPoints.includes(point)) {
+                pickupPoints.push(point);
+                updatePickupList();
+                updateHiddenInput();
+            }
+            pickupInput.value = '';  // Clear input after adding
+        });
+
+        // Keyboard Enter key for adding point
+        pickupInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addBtn.click();  // Trigger the same action as clicking the "+" button
+            }
+        });
+
+        // Dropdown visibility toggle
+        viewBtn.addEventListener('click', function() {
+            const isVisible = pickupDropdown.style.display === 'block';
+            pickupDropdown.style.display = isVisible ? 'none' : 'block';
+            viewBtn.setAttribute('aria-expanded', !isVisible);
+        });
+
+        // Close dropdown if clicked outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.matches('#view_pickup_btn') && 
+                !e.target.matches('#pickup_dropdown') && 
+                !e.target.closest('#pickup_dropdown')) {
+                pickupDropdown.style.display = 'none';
+            }
+        });
+
+        // Update the pickup list display
+        function updatePickupList() {
+            pickupList.innerHTML = '';
+            
+            if (pickupPoints.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = 'No pickup points added';
+                li.style.padding = '10px';
+                li.style.color = '#777';
+                pickupList.appendChild(li);
+            } else {
+                pickupPoints.forEach((point, index) => {
+                    const li = document.createElement('li');
+                    li.style.padding = '8px 10px';
+                    li.style.borderBottom = '1px solid #eee';
+                    li.style.display = 'flex';
+                    li.style.justifyContent = 'space-between';
+                    li.style.alignItems = 'center';
+                    
+                    const pointText = document.createElement('span');
+                    pointText.textContent = point;
+                    
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = '×';
+                    removeBtn.style.background = 'none';
+                    removeBtn.style.border = 'none';
+                    removeBtn.style.color = 'red';
+                    removeBtn.style.fontSize = '18px';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.onclick = function() {
+                        pickupPoints.splice(index, 1); 
+                        updatePickupList();
+                        updateHiddenInput();
+                    };
+                    
+                    li.appendChild(pointText);
+                    li.appendChild(removeBtn);
+                    pickupList.appendChild(li);
+                });
+            }
+        }
+
+        function updateHiddenInput() {
+            hiddenInput.value = JSON.stringify(pickupPoints);
+        }
+
+        // Initialize
+        updatePickupList();
+        updateHiddenInput();
+    });
+
     </script>
 </body>
 </html>

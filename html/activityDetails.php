@@ -1,34 +1,17 @@
 <?php
-require_once 'includes/dbCon.php'; // Include your database connection
-require 'includes/activity_store.php'; // Include your activity functions
+require_once 'includes/dbCon.php';
+require 'includes/activity_store.php';
 
-// Check if the ID is set in the URL
 
 if (isset($_GET['id'])) {
 
-    $activityId = intval($_GET['id']); // Get the ID and ensure it's an integer
-
-    // Fetch activity details from the database
-
-    $activities = getactivities($pdo, $activityId); // Fetch activity details
-
-
-    // Check if activity details were retrieved successfully
-
+    $activityId = intval($_GET['id']);
+    $activities = getactivities($pdo, $activityId); 
     if (!$activities) {
-
-        $activities = []; // Set to empty if not found
-
+        $activities = [];
     }
 
 } else {
-
-    // Redirect or handle the case where no ID is provided
-
-    header("Location: error_page.php"); // Redirect to an error page or handle accordingly
-
-    exit();
-
 }
 
 ?>
