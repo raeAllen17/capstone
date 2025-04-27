@@ -65,15 +65,6 @@ nav.scrolled {
 }
 
 
-
-.nav_right {
-    display: flex;
-    justify-content: flex-end;
-
-    margin: 2vh;
-    padding:0px;
-}
-
 input::placeholder {
     color: rgb(255, 255, 255);
 }
@@ -86,6 +77,43 @@ input::placeholder {
     padding: 10px 20px;
     border-radius: 10px;
     background-color: transparent;
+}
+
+.nav_right {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: 2vh;
+    padding:8px;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+#nav_right_click:hover {
+    position: relative;
+    z-index: -1;
+}
+
+#nav_right_click:hover::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: lightgray;  
+    z-index: -1;
+    animation: fillColor 0.1s forwards;
+    transform: scaleX(0);
+    transform-origin: left;
+}
+
+@keyframes fillColor {
+    to {
+        transform: scaleX(1);
+    }
 }
 
 

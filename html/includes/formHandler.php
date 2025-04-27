@@ -360,3 +360,22 @@ function loginUser ($pdo, $email, $password) {
     }
     return $result; 
 }
+
+function getOrgname($pdo, $userId) {
+    $stmt = $pdo->prepare("SELECT orgname FROM account_org WHERE id = :id");
+    $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $orgname = $stmt->fetch(PDO::FETCH_COLUMN);
+    return $orgname;
+}
+
+function getUserdata($pdo, $userId) {
+
+    $stmt = $pdo->prepare("SELECT * FROM account_org WHERE id = :id");
+    $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $userData;
+}

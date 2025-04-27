@@ -2,8 +2,11 @@
 session_start();
 require_once 'includes/dbCon.php';
 require_once 'includes/activity_store.php';
+require_once 'includes/formHandler.php';
 
 $userId = $_SESSION["id"];
+$orgname = '';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['submit'])) {
         $result=createActivity($pdo, $_POST, $userId);
@@ -11,17 +14,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 if (isset($_SESSION["id"])) {
-
     $userId = $_SESSION["id"];
-
+    $orgname = getOrgname($pdo, $userId);
 } else {
-
-    // Handle the case where the user ID is not set
-
     echo "User  ID is not set in the session.";
-
     exit();
-
 }
 ?>
 
@@ -118,7 +115,7 @@ if (isset($_SESSION["id"])) {
     </style>
 
 </head>
-<body style=" height: 100vh; background-color: lightgrey;">
+<body style=" height: 100vh; background-color: lightgrey; margin: 0; padding: 0;">
 
     <!--NAVBAR START -->
     <nav id="nav" style="background-color: white;">
@@ -132,13 +129,14 @@ if (isset($_SESSION["id"])) {
                 <li><a href="">Notification</a></li>
             </ul>
         </div>
-        <div class="nav_right">   
-            <span><?php  ?></span>
-        </div>          
+        <div class="nav_right" id="nav_right_click" onclick="window.location.href='org_account.php';">  
+            <img src="../imgs/defaultuser.png" style="height: 30px; width: 30px;"> 
+            <span style="display:flex; align-items:center;"><?php echo htmlspecialchars($orgname); ?></span>
+        </div>         
     </nav>
     <!--NAVBAR END -->
 
-    <div class="container" style=" padding-top: 7vh; display: flex; justify-content: center; height: 100vh; position: relative;">
+    <div class="container" style="padding-top: 5vh;display: flex; justify-content: center; height: 100vh; position: relative;">
         <div class="content" style="padding: 50px; height: 100vh;">
             <h1 style=" margin-bottom: 10px; font-size: 2.4em;">Create your own Activity and feel the Thrill!</h1>
             <form action="" method="POST" enctype="multipart/form-data">
