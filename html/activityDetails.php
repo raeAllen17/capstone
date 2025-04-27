@@ -75,7 +75,7 @@ if (isset($_GET['id'])) {
     }
     </style>
 </head>
-<body>
+<body style="height: 110vh; width: 100%;">
 
     <nav id="nav">
             <div class="nav_left">
@@ -92,11 +92,11 @@ if (isset($_GET['id'])) {
             </div>          
     </nav>
 
-    <div class="container" style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; width: 100%; gap: 45px;">
-        <div style="width: 1600px; font-size: 1.5em;">
+    <div class="container" style="display: flex; flex-direction: column; justify-content: center; align-items: baseline; height: 100vh; width: 100%%; gap: 30px; padding-top: 7vh;">
+        <div style="width: 100%; font-size: 1.5em;">
             <h1 style="color: rgb(0, 80 ,0); font-size: 2.3em;">Select and join the <br> adventure now!</h1>
         </div>    
-        <div class="activities-list" style="width: 1600px;">
+        <div class="activities-list" style="width: 80%;">
             <?php if (!empty($activities)): ?>
                 <div style="background-color: gray; height: 500px; width: 1600px; border-radius: 20px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
                     <div style="background-image: linear-gradient(to right, rgba(0,0,0,1), rgba(255,0,0,0)); height: 500px; width: 900px; 
@@ -130,6 +130,14 @@ if (isset($_GET['id'])) {
                 <h1>Sorry, no activities available at this time.</h1>
                 <p style="color:gray;">Try refreshing the page or logging in again.</p>
             <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="modal-box" id="participate-modal" style=" position: absolute; top: 50%; left: 50%; z-index: 3;">
+        <div style="height: 300px; width: 300px; background-color: lightgrey; padding: 10px;">
+            <div style="">
+                
+            </div>
         </div>
     </div>
 

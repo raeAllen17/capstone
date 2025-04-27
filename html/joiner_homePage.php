@@ -26,10 +26,16 @@ $data = displayActivity($pdo);
             text-align: center;
 
         }
+        #join-button {
+            padding: 10px;
+            border: none;border-radius: 10px;
+            background-color: lightseagreen;
+            color: white;
+        }
     </style>
 </head>
 
-<body>
+<body style=" height: 100vh; background-color: lightgrey;">
 
     <nav id="nav">
             <div class="nav_left">
@@ -52,7 +58,7 @@ $data = displayActivity($pdo);
         <div style=" padding: 40px;">
             <div>
                 <h1 style=" font-size: 2.8em; margin-bottom: 10px;">Select and join the <br> adventure now!</h1>
-                <div style=" min-width: 1600px; height: 600px; padding: 20px; border: 2px solid black; border-radius: 20px;">
+                <div style=" min-width: 1600px; height: 600px; padding: 20px; border: 2px solid black; border-radius: 20px; background-color:white;">
                     <!-- php data here-->
                 <table>
                     <thead>
@@ -80,7 +86,7 @@ $data = displayActivity($pdo);
                                 <td><?php echo htmlspecialchars($row['current_participants']);?>/<?php echo htmlspecialchars($row['participants']);?></td>
                                 <td>
                                 <a href="activityDetails.php?id=<?php echo htmlspecialchars($row['id']); ?>">
-                                <button>JOIN</button>
+                                <button id="join-button">JOIN</button>
                                 </a>
                                 </td>
                             </tr>

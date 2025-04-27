@@ -118,7 +118,7 @@ if (isset($_SESSION["id"])) {
     </style>
 
 </head>
-<body>
+<body style=" height: 100vh; background-color: lightgrey;">
 
     <!--NAVBAR START -->
     <nav id="nav" style="background-color: white;">
@@ -138,11 +138,11 @@ if (isset($_SESSION["id"])) {
     </nav>
     <!--NAVBAR END -->
 
-    <div class="container" style=" padding-top: 7vh; display: flex; justify-content: center; background-color: lightgrey; height: 100vh; position: relative;">
-        <div class="content" style="padding: 50px;">
+    <div class="container" style=" padding-top: 7vh; display: flex; justify-content: center; height: 100vh; position: relative;">
+        <div class="content" style="padding: 50px; height: 100vh;">
             <h1 style=" margin-bottom: 10px; font-size: 2.4em;">Create your own Activity and feel the Thrill!</h1>
             <form action="" method="POST" enctype="multipart/form-data">
-                <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 30px; border: 2px solid black; border-radius: 20px; width: 1200px; background-color: white;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 30px; border: 2px solid black; border-radius: 20px; width: 1200px; background-color: white; max-height: 100vh;">
                     <div class="left" style="display: flex; flex-direction: column; justify-content: space-between; gap: 20px;">
                         <div>
                             <p>Activity Name</p>

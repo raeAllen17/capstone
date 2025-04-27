@@ -47,7 +47,7 @@ if (isset($_POST["submit"])) {
             display: flex;
             justify-content: center;
             align-items: center;
-            background-image: url('http://localhost/JOYn/JOYn/imgs/landpage_bg.jpg');
+            background-image: url('../imgs/landpage_bg.jpg');
             background-size: cover;
             background-position: center;
         }
@@ -127,7 +127,7 @@ if (isset($_POST["submit"])) {
             </ul>
         </div>
         <div class="nav_right">   
-            <input type="text" placeholder="Search" class="searchBar">
+            
         </div>          
     </nav> 
 
