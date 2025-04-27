@@ -12,6 +12,21 @@ $data = displayActivity($pdo);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
+
+    <style>
+        table {
+            width: 100%;
+        }
+        table, tbody {
+            border-collapse: collapse;
+        }
+        td {
+            border-bottom: 1px solid black;
+            padding: 15px;
+            text-align: center;
+
+        }
+    </style>
 </head>
 
 <body>
@@ -36,7 +51,7 @@ $data = displayActivity($pdo);
     <div class="container" style=" padding-top: 7vh; display: grid; place-items: center;">
         <div style=" padding: 40px;">
             <div>
-                <h1 style=" font-size: 2.5em;">Select and join the <br> adventure now!</h1>
+                <h1 style=" font-size: 2.8em; margin-bottom: 10px;">Select and join the <br> adventure now!</h1>
                 <div style=" min-width: 1600px; height: 600px; padding: 20px; border: 2px solid black; border-radius: 20px;">
                     <!-- php data here-->
                 <table>
@@ -56,19 +71,19 @@ $data = displayActivity($pdo);
                     <?php if ($data['success']):?>
                         <?php foreach( $data['data'] as $row):?>
                             <tr>
-                                <td><?php echo htmlspecialchars($row['activity_name']); ?></td>
-                                <td><?php echo htmlspecialchars($row['description']); ?></td>
-                                <td><?php echo htmlspecialchars($row['location']); ?></td>
-                                <td><?php echo htmlspecialchars($row['date']); ?></td>
+                                <td style="font-weight: bold;"><?php echo htmlspecialchars($row['activity_name']); ?></tdstlye>
+                                <td style="max-width: 600px;"><?php echo htmlspecialchars($row['description']); ?></td>
+                                <td style="font-weight: bold;"><?php echo htmlspecialchars($row['location']); ?></td>
+                                <td><?php $date = new DateTime($row['date']); echo $date->format('F j, Y');?></td>
                                 <td><?php echo htmlspecialchars($row['distance']); ?></td>
                                 <td><?php echo htmlspecialchars($row['difficulty']); ?></td>
-                                <td><?php echo htmlspecialchars($row['participants']); ?></td>
+                                <td><?php echo htmlspecialchars($row['current_participants']);?>/<?php echo htmlspecialchars($row['participants']);?></td>
                                 <td>
                                 <a href="activityDetails.php?id=<?php echo htmlspecialchars($row['id']); ?>">
-                                <button>join</button>
+                                <button>JOIN</button>
                                 </a>
                                 </td>
-
+                            </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>

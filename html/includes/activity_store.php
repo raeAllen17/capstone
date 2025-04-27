@@ -20,10 +20,12 @@ function createActivity($pdo, $userData, $userId){
     if (isset($_FILES['images'])) {
         $files = $_FILES['images'];
         for ($i = 0; $i < count($files['name']); $i++) {
-            $target_dir = "C:/xampp/htdocs/Capstone/uploads/"; // Ensure this directory exists and is writable
-            $target_file = $target_dir . basename($files['name'][$i]);
+            $target_dir = "C:/xampp/htdocs/Capstone/uploads/"; 
+            $filename = basename($files['name'][$i]);
+            $target_file = $target_dir . $filename;
+
             if (move_uploaded_file($files['tmp_name'][$i], $target_file)) {
-                $imagePaths[] = $target_file;
+                $imagePaths[] = $filename; 
             }
         }
     }
@@ -68,8 +70,17 @@ function displayActivity($pdo){
     return $result;
 }
 
-function getactivities($pdo, $activityId) {
+function getactivities($pdo, $activityId)  {
     $stmt = $pdo->prepare("SELECT * FROM activities WHERE id = ?");
     $stmt->execute([$activityId]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
+    $activity = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($activity) {
+        $stmt_images = $pdo->prepare("SELECT images FROM activities WHERE id = ?");
+        $stmt_images->execute([$activityId]);
+        $activity['images'] = $stmt_images->fetchAll(PDO::FETCH_COLUMN);
+
+    }
+
+    return $activity;
 }
