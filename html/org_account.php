@@ -2,15 +2,35 @@
 session_start();
 require_once 'includes/dbCon.php';
 require_once 'includes/formHandler.php';
+
 if (isset($_SESSION['id'])) {
     $userId = $_SESSION['id']; 
     $userData = getUserdata($pdo, $userId);
     $orgname = $userData['orgname'];
 } else {
-    echo "login ka muna.";
+    echo "Please log in first.";
+    exit; // Stop execution if not logged in
 }
 
+// Function to display uploaded QR codes
+function displayQRCodes($org_id, $pdo) {
+    $query = $pdo->prepare("SELECT qr_code_image, bank_name FROM qr_codes WHERE org_id = ?");
+    $query->execute([$org_id]);
+    $qrCodes = $query->fetchAll(PDO::FETCH_ASSOC);
+
+    $output = '';
+    foreach ($qrCodes as $qrCode) {
+        $output .= '<div>';
+        $output .= '<img src="data:image/jpeg;base64,' . base64_encode($qrCode['qr_code_image']) . '" alt="QR Code" style="height: 100px; width: 100px; margin: 10px; object-fit: cover;"/>';
+        $output .= '<p>' . htmlspecialchars($qrCode['bank_name']) . '</p>'; 
+        $output .= '</div>';
+    }
+    return $output;
+}
+
+$org_id = $_SESSION['id']; // Assuming the organization ID is stored in the session
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,32 +38,29 @@ if (isset($_SESSION['id'])) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
-
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
 
     <style>
         .no-spinner {
-            -moz-appearance: textfield; /* Removes spinner for Firefox */
-            -webkit-appearance: textfield; /* Removes spinner for Chrome, Safari, Edge */
-            appearance: textfield; /* Standard property for modern browsers */
+            -moz-appearance: textfield; 
+            -webkit-appearance: textfield; 
+            appearance: textfield; 
         }
-
         .no-spinner::-webkit-inner-spin-button,
         .no-spinner::-webkit-outer-spin-button {
-            -webkit-appearance: none; /* Hides spinner buttons for WebKit browsers */
-            margin: 0; /* Optional: Adjust layout */
+            -webkit-appearance: none; 
+            margin: 0; 
         }
         input {
             padding: 10px;
             border-radius: 5px;
         }
-
         legend {
             padding-top: 10px;
             font-weight: bold;
         }
         .blue_buttons {
-            background: linear-gradient(to right, #5dbb63, #03ac13); /* Blue to Purple */
+            background: linear-gradient(to right, #5dbb63, #03ac13); 
             border: none;
             color: white;
             padding: 12px 24px;
@@ -71,16 +88,13 @@ if (isset($_SESSION['id'])) {
         input[type="file"] {
             display: none;
         }
-        .custom-upload-button:hover {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 
 <!--NAVBAR START -->
 <nav id="nav" style="background-color: white;">
     <div class="nav_left">
-        <ul class = "navbar">
+        <ul class="navbar">
             <li><input type="button" class="logo"></li>
             <li><a href="">Home</a></li>
             <li><a href="org_createAct.php">Activity</a></li>
@@ -98,22 +112,23 @@ if (isset($_SESSION['id'])) {
 
 <body style="height: 100vh; width: 100%; margin: 0; padding: 0; position: relative;">
 
-    <div class="container" style=" height: 100%; width: 100%; padding: 12vh;">
-        <div style=" height: 250px; width: 100%; background-color: skyblue; border-top-left-radius: 20px; border-top-right-radius: 20px; position: relative; margin: 0;">  
-            <!--  the button on the right of the cover -->
-            <span id="div-button" style="position: absolute; bottom: 10px; right: 10px; display: flex; align-items:center; padding: 10px; background-color: grey; color: white; border-radius: 10px; gap: 10px;"><img src="../imgs/icon_image.png" alt="" style=" height: 30px; width: 30px;"><p>Add cover photo</p></span>      
-            <!--  the profile image on the left -->
+    <div class="    container" style="height: 100%; width: 100%; padding: 12vh;">
+        <div style="height: 250px; width: 100%; background-color: skyblue; border-top-left-radius: 20px; border-top-right-radius: 20px; position: relative; margin: 0;">  
+            <span id="div-button" style="position: absolute; bottom: 10px; right: 10px; display: flex; align-items:center; padding: 10px; background-color: grey; color: white; border-radius: 10px; gap: 10px;">
+                <img src="../imgs/icon_image.png" alt="" style="height: 30px; width: 30px;">
+                <p>Add cover photo</p>
+            </span>      
             <div id="div-image" style="position: absolute; bottom: -40%; left: 3%; background-color: lightcoral; height:220px; width: 220px; border-radius: 50%; display: grid; place-content: center;">
-                <button id="profileImage" style="cursor: pointer;background-image: url('../imgs/defaultuser.png'); height:200px; width: 200px; background-position: center; background-size: cover; border-radius: 50%; background-color:  transparent; border: none;" onclick="document.getElementById('profileInput').click();">
+                <button id="profileImage" style="cursor: pointer;background-image: url('../imgs/defaultuser.png'); height:200px; width: 200px; background-position: center; background-size: cover; border-radius: 50%; background-color: transparent; border: none;" onclick="document.getElementById('profileInput').click();">
                 </button>
                 <input id="profileInput" type="file" style="display: none;" accept="image/*" onchange="updateImage(this, 'profileImage')">
             </div>       
         </div>
         <div style="width: 100%; height: 100%; position: relative; display: flex; justify-content: space-between; align-items: center; gap: 2%;">
-            <div style=" width: 20%;  margin-top: 3%;">
+            <div style="width: 20%; margin-top: 3%;">
                 <div>
                     <form action="">
-                        <div style=" display: flex; flex-direction: column; padding: 10px; gap:5px;">
+                        <div style="display: flex; flex-direction: column; padding: 10px; gap:5px;">
                             <legend>Organization Name</legend>
                             <input type="text" value="<?php echo htmlspecialchars($userData['orgname'])?>">
                             <legend>Email</legend>
@@ -131,53 +146,53 @@ if (isset($_SESSION['id'])) {
                     </div> 
                 </div>
             </div>
-            <div style=" width:80%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; gap: 2%; padding: 30px 0px 30px 30px;">
-                <div style=" width: 100%; height: 50%;">
-                    <div style=" width: 100%; height: 100%; border: 2px solid black; padding: 30px;">
+            <div style="width:80%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; gap: 2%; padding: 30px 0px 30px 30px;">
+                <div style="width: 100%; height: 50%;">
+                    <div style="width: 100%; height: 100%; border: 2px solid black; padding: 30px;">
                         <div>
-                            <h2>Your Past Events</label>
+                            <h2>Your Past Events</h2>
                         </div>
                     </div>                
                 </div>
-                <div style=" width: 100%; height: 50%; border: 2px solid black; border-bottom-right-radius: 20px; padding: 30px; position: relative;">
-                        <div>
-                            <h2>QR Codes</label>
-                            <p style=" color:lightgrey; font-size: 2vh;">**Upload images of your online banks (Maya, Gcash) for registration fees transaction**</p>
-                        </div>
-                        <div>
-                            <!-- images -->
-                        </div>
-                        <span style="position: absolute; bottom: 0; right: 0;"><button class="blue_buttons" onclick="showModal('modal-box')">Upload</button></span>
+                <div style="width: 100%; height: 50%; border: 2px solid black; border-bottom-right-radius: 20px; padding: 30px; position: relative;">
+                    <div>
+                        <h2>QR Codes</h2>
+                        <p style="color:lightgrey; font-size: 2vh;">**Upload images of your online banks (Maya, Gcash) for registration fees transaction**</p>
+                    </div>
+                    <div>
+                        <?php echo displayQRCodes($org_id, $pdo); ?>
+                    </div>
+                    <span style="position: absolute; bottom: 0; right: 0;">
+                        <button class="blue_buttons" onclick="showModal()">Upload</button>
+                    </span>
                 </div>      
             </div>       
         </div>
     </div>
 
-    <div id="modal-overlay" style=" position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(128, 128, 128, 0.7); display: none; justify-content: center; align-items: center; z-index: 999;">
-        <div id="modal-box" style=" width: 400px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none; background-color: azure; border-radius: 10px;">   
-            <div style=" height: 100%; position: relative; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px    ;">
-                <div style=" width: 100%;">
-                    <form action="" style="">
-                        <div style=" display: flex; flex-direction: column; padding: 20px; height: 100%; gap: 10px;">
+    <div id="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(128, 128, 128, 0.    7); display: none; justify-content: center; align-items: center; z-index: 999;">
+        <div id="modal-box" style="width: 400px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: azure; border-radius: 10px;">   
+            <div style="height: 100%; position: relative; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px;">
+                <div style="width: 100%;">
+                    <form action="includes/upload_qr.php" method="POST" enctype="multipart/form-data">
+                        <div style="display: flex; flex-direction: column; padding: 20px; height: 100%; gap: 10px;">
                             <label>Bank</label>
-                            <input type="text" placeholder="Maya - Gcash">
+                            <input type="text" name="bank" placeholder="Maya - Gcash" required>
                             
-                            <label for="modalImageInput" style=" display: inline-block; padding: 5px 10px; background-color: #03ac13; color: white; font-size: 16px; border-radius: 5px; cursor: pointer; text-align: center; transition: background-color 0.3s ease;">Upload Image</label>
-                            <input type="file" id="modalImageInput" accept="image/*" onchange="updateImage(this, 'imagePreview')"> 
-                            <div style=" width: 100%; display: grid; place-content: center;">
-                                <img id="imagePreview" src="" alt="Preview" style=" height: 300px; width: 300px; display: none; margin-top: 10px; object-fit: cover;">  
+                            <label for="modalImageInput" style="display: inline-block; padding: 5px 10px; background-color: #03ac13; color: white; font-size: 16px; border-radius: 5px; cursor: pointer; text-align: center; transition: background-color 0.3s ease;">Upload Image</label>
+                            <input type="file" id="modalImageInput" name="qr_code_image" accept="image/*" onchange="updateImage(this, 'imagePreview')" required> 
+                            <div style="width: 100%; display: grid; place-content: center;">
+                                <img id="imagePreview" src="" alt="Preview" style="height: 300px; width: 300px; display: none; margin-top: 10px; object-fit: cover;">  
                             </div>                                                
                         </div> 
                         <div style="padding: 20px; width: 100%; display: flex; justify-content: flex-end;">
-                            <button style=" padding: 10px; border: 2px solid black; width: 100px; border-radius: 5px; ">Save</button>
+                            <button type="submit" style="padding: 10px; border: 2px solid black; width: 100px; border-radius: 5px;">Save</button>
                         </div>          
                     </form> 
                 </div>
             </div>      
         </div>
     </div>
-    
-    
 
     <script>
         function updateImage(input, targetId) {
@@ -198,36 +213,19 @@ if (isset($_SESSION['id'])) {
                 reader.readAsDataURL(file);
             }
         }
+
         function showModal() {
             document.getElementById("modal-box").style.display = "block";
-            document.getElementById("modal-overlay").style.display = "block";
+            document.getElementById("modal-overlay").style.display = "flex";
         }
 
-        function hideModal() {
-            document.getElementById("modal-box").style.display = "none";
-        }
         document.getElementById("modal-overlay").addEventListener("click", function(event) {
             if (event.target === this) {
                 this.style.display = "none";
+                document.getElementById("modal-box").style.display = "none"; // Hide modal when overlay is clicked
             }
         });
-        
-        function previewImage(event) {
-            const file = event.target.files[0];
-            const reader = new FileReader();
-
-            reader.onload = function () {
-                const imgPreview = document.getElementById('imagePreview');
-                imgPreview.src = reader.result; arguments
-                imgPreview.style.display = 'block';
-            };
-
-            if (file) {
-                reader.readAsDataURL(file);
-            }
-        }
     </script>
 
 </body>
-
 </html>
