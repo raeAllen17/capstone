@@ -74,6 +74,29 @@ if (isset($_SESSION['id'])) {
         .custom-upload-button:hover {
             background-color: #0056b3;
         }
+        @media (max-width: 768px) {
+            #div-image {
+                height: 15vw;
+                width: 15vw;
+            }
+
+            #profileImage {
+                height: 13vw;
+                width: 13vw;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #div-image {
+                height: 20vw;
+                width: 20vw;
+            }
+
+            #profileImage {
+                height: 18vw;
+                width: 18vw;
+            }
+        }
     </style>
 </head>
 
@@ -102,16 +125,15 @@ if (isset($_SESSION['id'])) {
         <div style=" height: 250px; width: 100%; background-color: skyblue; border-top-left-radius: 20px; border-top-right-radius: 20px; position: relative; margin: 0;">  
             <!--  the button on the right of the cover -->
             <span id="div-button" style="position: absolute; bottom: 10px; right: 10px; display: flex; align-items:center; padding: 10px; background-color: grey; color: white; border-radius: 10px; gap: 10px;"><img src="../imgs/icon_image.png" alt="" style=" height: 30px; width: 30px;"><p>Add cover photo</p></span>      
-            <!--  the profile image on the left -->
-            <div id="div-image" style="position: absolute; bottom: -40%; left: 3%; background-color: lightcoral; height:220px; width: 220px; border-radius: 50%; display: grid; place-content: center;">
-                <button id="profileImage" style="cursor: pointer;background-image: url('../imgs/defaultuser.png'); height:200px; width: 200px; background-position: center; background-size: cover; border-radius: 50%; background-color:  transparent; border: none;" onclick="document.getElementById('profileInput').click();">
-                </button>
+            <!--  the profile image on the left --> 
+            <div id="div-image" style="position: absolute; bottom: -40%; left: 3%; background-color: lightcoral; height:11vw; width: 11vw; border-radius: 50%; display: grid; place-content: center;">
+                <button id="profileImage" style="cursor: pointer;background-image: url('../imgs/defaultuser.png'); height: 10vw; width: 10vw; background-position: center; background-size: cover; border-radius: 50%; background-color:  transparent; border: none;" onclick="document.getElementById('profileInput').click();"></button>
                 <input id="profileInput" type="file" style="display: none;" accept="image/*" onchange="updateImage(this, 'profileImage')">
-            </div>       
+            </div>  
         </div>
         <div style="width: 100%; height: 100%; position: relative; display: flex; justify-content: space-between; align-items: center; gap: 2%;">
-            <div style=" width: 20%;  margin-top: 3%;">
-                <div>
+            <div style=" width: 20%; height: 100%; padding-top:7%;">
+                <div style=" width: 100%; height: 100%;">
                     <form action="">
                         <div style=" display: flex; flex-direction: column; padding: 10px; gap:5px;">
                             <legend>Organization Name</legend>
