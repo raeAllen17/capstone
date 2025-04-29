@@ -88,6 +88,9 @@ $org_id = $_SESSION['id']; // Assuming the organization ID is stored in the sess
         input[type="file"] {
             display: none;
         }
+        .custom-upload-button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 
@@ -112,20 +115,19 @@ $org_id = $_SESSION['id']; // Assuming the organization ID is stored in the sess
 
 <body style="height: 100vh; width: 100%; margin: 0; padding: 0; position: relative;">
 
-    <div class="    container" style="height: 100%; width: 100%; padding: 12vh;">
-        <div style="height: 250px; width: 100%; background-color: skyblue; border-top-left-radius: 20px; border-top-right-radius: 20px; position: relative; margin: 0;">  
-            <span id="div-button" style="position: absolute; bottom: 10px; right: 10px; display: flex; align-items:center; padding: 10px; background-color: grey; color: white; border-radius: 10px; gap: 10px;">
-                <img src="../imgs/icon_image.png" alt="" style="height: 30px; width: 30px;">
-                <p>Add cover photo</p>
-            </span>      
+    <div class="container" style=" height: 100%; width: 100%; padding: 12vh;">
+        <div style=" height: 250px; width: 100%; background-color: skyblue; border-top-left-radius: 20px; border-top-right-radius: 20px; position: relative; margin: 0;">  
+            <!--  the button on the right of the cover -->
+            <span id="div-button" style="position: absolute; bottom: 10px; right: 10px; display: flex; align-items:center; padding: 10px; background-color: grey; color: white; border-radius: 10px; gap: 10px;"><img src="../imgs/icon_image.png" alt="" style=" height: 30px; width: 30px;"><p>Add cover photo</p></span>      
+            <!--  the profile image on the left -->
             <div id="div-image" style="position: absolute; bottom: -40%; left: 3%; background-color: lightcoral; height:220px; width: 220px; border-radius: 50%; display: grid; place-content: center;">
-                <button id="profileImage" style="cursor: pointer;background-image: url('../imgs/defaultuser.png'); height:200px; width: 200px; background-position: center; background-size: cover; border-radius: 50%; background-color: transparent; border: none;" onclick="document.getElementById('profileInput').click();">
+                <button id="profileImage" style="cursor: pointer;background-image: url('../imgs/defaultuser.png'); height:200px; width: 200px; background-position: center; background-size: cover; border-radius: 50%; background-color:  transparent; border: none;" onclick="document.getElementById('profileInput').click();">
                 </button>
                 <input id="profileInput" type="file" style="display: none;" accept="image/*" onchange="updateImage(this, 'profileImage')">
-            </div>       
+            </div>  
         </div>
         <div style="width: 100%; height: 100%; position: relative; display: flex; justify-content: space-between; align-items: center; gap: 2%;">
-            <div style="width: 20%; margin-top: 3%;">
+            <div style=" width: 20%;  margin-top: 3%;">
                 <div>
                     <form action="">
                         <div style="display: flex; flex-direction: column; padding: 10px; gap:5px;">
