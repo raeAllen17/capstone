@@ -91,6 +91,31 @@ $org_id = $_SESSION['id']; // Assuming the organization ID is stored in the sess
         .custom-upload-button:hover {
             background-color: #0056b3;
         }
+        @media (max-width: 768px) {
+             #div-image {
+                 height: 15vw;
+                 width: 15vw;
+                 bottom: -30%;
+             }
+ 
+             #profileImage {
+                 height: 13vw;
+                 width: 13vw;
+             }
+         }
+ 
+         @media (max-width: 480px) {
+             #div-image {
+                 height: 20vw;
+                 width: 20vw;
+                 bottom: -20%;
+             }
+ 
+             #profileImage {
+                 height: 18vw;
+                 width: 18vw;
+             }
+         }
     </style>
 </head>
 
@@ -116,12 +141,12 @@ $org_id = $_SESSION['id']; // Assuming the organization ID is stored in the sess
 <body style="height: 100vh; width: 100%; margin: 0; padding: 0; position: relative;">
 
     <div class="container" style=" height: 100%; width: 100%; padding: 12vh;">
-        <div style=" height: 250px; width: 100%; background-color: skyblue; border-top-left-radius: 20px; border-top-right-radius: 20px; position: relative; margin: 0;">  
+        <div style=" height: 25%; width: 100%; background-color: skyblue; border-top-left-radius: 20px; border-top-right-radius: 20px; position: relative; margin: 0;">  
             <!--  the button on the right of the cover -->
             <span id="div-button" style="position: absolute; bottom: 10px; right: 10px; display: flex; align-items:center; padding: 10px; background-color: grey; color: white; border-radius: 10px; gap: 10px;"><img src="../imgs/icon_image.png" alt="" style=" height: 30px; width: 30px;"><p>Add cover photo</p></span>      
             <!--  the profile image on the left -->
-            <div id="div-image" style="position: absolute; bottom: -40%; left: 3%; background-color: lightcoral; height:220px; width: 220px; border-radius: 50%; display: grid; place-content: center;">
-                <button id="profileImage" style="cursor: pointer;background-image: url('../imgs/defaultuser.png'); height:200px; width: 200px; background-position: center; background-size: cover; border-radius: 50%; background-color:  transparent; border: none;" onclick="document.getElementById('profileInput').click();">
+            <div id="div-image" style="position: absolute; bottom: -45%; left: 3%; background-color: lightcoral; height:11vw; width:11vw; border-radius: 50%; display: grid; place-content: center;">
+                <button id="profileImage" style="cursor: pointer;background-image: url('../imgs/defaultuser.png'); height:10vw; width: 10vw; background-position: center; background-size: cover; border-radius: 50%; background-color:  transparent; border: none;" onclick="document.getElementById('profileInput').click();">
                 </button>
                 <input id="profileInput" type="file" style="display: none;" accept="image/*" onchange="updateImage(this, 'profileImage')">
             </div>  
@@ -165,14 +190,14 @@ $org_id = $_SESSION['id']; // Assuming the organization ID is stored in the sess
                         <?php echo displayQRCodes($org_id, $pdo); ?>
                     </div>
                     <span style="position: absolute; bottom: 0; right: 0;">
-                        <button class="blue_buttons" onclick="showModal()">Upload</button>
-                    </span>
+                        <button class="blue_buttons" onclick="showModal('modal-overlay')">Upload</button>
+                    </span> 
                 </div>      
             </div>       
         </div>
     </div>
 
-    <div id="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(128, 128, 128, 0.    7); display: none; justify-content: center; align-items: center; z-index: 999;">
+    <div id="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(128, 128, 128, 0.7); display: none; justify-content: center; align-items: center; z-index: 999;">
         <div id="modal-box" style="width: 400px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: azure; border-radius: 10px;">   
             <div style="height: 100%; position: relative; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px;">
                 <div style="width: 100%;">
