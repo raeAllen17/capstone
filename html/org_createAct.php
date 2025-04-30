@@ -17,7 +17,7 @@ if (isset($_SESSION["id"])) {
     $userId = $_SESSION["id"];
     $orgname = getOrgname($pdo, $userId);
 } else {
-    echo "User  ID is not set in the session.";
+    header('location: landing_page.php');
     exit();
 }
 ?>
@@ -132,7 +132,7 @@ if (isset($_SESSION["id"])) {
         <div class="nav_right" id="nav_right_click" onclick="window.location.href='org_account.php';">  
             <img src="../imgs/defaultuser.png" style="height: 30px; width: 30px;"> 
             <span style="display:flex; align-items:center;"><?php echo htmlspecialchars($orgname); ?></span>
-        </div>         
+        </div>   
     </nav>
     <!--NAVBAR END -->
 

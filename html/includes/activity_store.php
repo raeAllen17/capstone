@@ -84,3 +84,81 @@ function getactivities($pdo, $activityId)  {
 
     return $activity;
 }
+
+//FUNCTIONS FOR PROFILE SETUPS
+
+function uploadQRCode($file, $uploadData, $pdo) {
+    session_start(); // Ensure session is active
+
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    $maxFileSize = 10 * 1024 * 1024;
+
+    // Validate file size
+    if ($file['size'] > $maxFileSize) {
+        $_SESSION['error_message'] = "File size exceeds the maximum limit of 10 MB.";
+        return false;
+    }
+
+    // Validate file type
+    if (!in_array($file['type'], $allowedTypes)) {
+        $_SESSION['error_message'] = "Invalid file type. Please upload a JPEG, PNG, or GIF image.";
+        return false;
+    }
+
+    // Handle upload errors
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        $_SESSION['error_message'] = "Error uploading file.";
+        return false;
+    }
+
+    // Ensure file is readable
+    if (!file_exists($file['tmp_name']) || !is_readable($file['tmp_name'])) {
+        $_SESSION['error_message'] = "Uploaded file is unreadable.";
+        return false;
+    }
+
+    try {
+        // Extract data
+        $userId = $uploadData['id'];
+        $bankName = htmlspecialchars($uploadData['bank']);
+
+        // Read file contents and store in chunks (prevents packet size errors)
+        $imageData = file_get_contents($file['tmp_name']);
+
+        $stmt = $pdo->prepare("INSERT INTO qr_codes (org_id, qr_code_image, bank_name) VALUES (:org_id, :qr_code_image, :bank_name)");
+
+        $stmt->bindParam(':org_id', $userId, PDO::PARAM_INT);
+        $stmt->bindParam(':qr_code_image', $imageData, PDO::PARAM_LOB); 
+        $stmt->bindParam(':bank_name', $bankName, PDO::PARAM_STR);
+
+        $pdo->beginTransaction();
+        $success = $stmt->execute();
+        $pdo->commit();
+
+        return $success;
+    } catch (PDOException $e) {
+        $pdo->rollBack();
+        $_SESSION['error_message'] = "Database error: " . $e->getMessage();
+        return false;
+    }
+}
+
+
+function displayQRCodes($pdo, $userId) {
+    $result = [
+        'success' => false,
+        'failed_message' => '',
+        'data' => []
+    ];
+
+    try {
+        $query = $pdo->prepare("SELECT qr_code_image, bank_name FROM qr_codes WHERE org_id = ?");
+        $query->execute([$userId]);
+        $result['data'] = $query->fetchAll(PDO::FETCH_ASSOC);
+        $result['success'] = true;
+    } catch (PDOException $e) {
+        $result['failed_message'] = $e->getMessage();
+    }
+
+    return $result;
+}

@@ -2,33 +2,60 @@
 session_start();
 require_once 'includes/dbCon.php';
 require_once 'includes/formHandler.php';
+require_once 'includes/activity_store.php';
 
 if (isset($_SESSION['id'])) {
     $userId = $_SESSION['id']; 
     $userData = getUserdata($pdo, $userId);
     $orgname = $userData['orgname'];
 } else {
-    echo "Please log in first.";
-    exit; // Stop execution if not logged in
+    session_unset();
+    session_destroy();
+    header('location: landing_page.php');
+    exit;
 }
 
-// Function to display uploaded QR codes
-function displayQRCodes($org_id, $pdo) {
-    $query = $pdo->prepare("SELECT qr_code_image, bank_name FROM qr_codes WHERE org_id = ?");
-    $query->execute([$org_id]);
-    $qrCodes = $query->fetchAll(PDO::FETCH_ASSOC);
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['logout_button'])) {
+    session_unset();
+    session_destroy(); 
+    header('location: landing_page.php');
+    exit;
+}
 
-    $output = '';
-    foreach ($qrCodes as $qrCode) {
-        $output .= '<div>';
-        $output .= '<img src="data:image/jpeg;base64,' . base64_encode($qrCode['qr_code_image']) . '" alt="QR Code" style="height: 100px; width: 100px; margin: 10px; object-fit: cover;"/>';
-        $output .= '<p>' . htmlspecialchars($qrCode['bank_name']) . '</p>'; 
-        $output .= '</div>';
+$errorMessage = "";
+$successMessage = "";
+
+
+//form handling for images, function found in ACTIVITY_STORE
+if (isset($_SESSION['error_message']) && $_SESSION['error_message'] !== "") {
+    $errorMessage = $_SESSION['error_message'];
+    unset($_SESSION['error_message']); 
+}
+if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") {
+    $successMessage = $_SESSION['success_message'];
+    unset($_SESSION['success_message']); 
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['qr_code_image'])) {
+    $uploadData = [
+        'id' => $_SESSION['id'],
+        'bank' => htmlspecialchars($_POST['bank'])
+    ];
+
+    if (uploadQRCode($_FILES['qr_code_image'], $uploadData, $pdo)) {
+        $_SESSION['success_message'] = "QR code uploaded successfully!";
+    } else {
+        $errorMessage = $_SESSION['error_message'];
     }
-    return $output;
+
+    header("Location: org_account.php");
+    exit();
 }
 
-$org_id = $_SESSION['id']; // Assuming the organization ID is stored in the session
+
+//retrieve images
+$qrCodeData = displayQRCodes($pdo, $userId);
+
 ?>
 
 <!DOCTYPE html>
@@ -92,30 +119,43 @@ $org_id = $_SESSION['id']; // Assuming the organization ID is stored in the sess
             background-color: #0056b3;
         }
         @media (max-width: 768px) {
-             #div-image {
-                 height: 15vw;
-                 width: 15vw;
-                 bottom: -30%;
-             }
- 
-             #profileImage {
-                 height: 13vw;
-                 width: 13vw;
-             }
-         }
- 
-         @media (max-width: 480px) {
-             #div-image {
-                 height: 20vw;
-                 width: 20vw;
-                 bottom: -20%;
-             }
- 
-             #profileImage {
-                 height: 18vw;
-                 width: 18vw;
-             }
-         }
+            #div-image {
+                height: 15vw;
+                width: 15vw;
+                bottom: -30%;
+            }
+            #profileImage {
+                height: 13vw;
+                width: 13vw;
+            }
+        }
+        @media (max-width: 480px) {
+            #div-image {
+                height: 20vw;
+                width: 20vw;
+                bottom: -20%;
+            }
+            #profileImage {
+                height: 18vw;
+                width: 18vw;
+            }
+        }
+        .qr-code-item:hover {
+            transform: scale(1.05); /* Slightly enlarge on hover */
+        }
+
+        .qr-code-image {
+            height: 200px;
+            width: 200px;
+            object-fit: cover; 
+            border-radius: 5px; 
+        }
+
+        .bank-name {
+            margin-top: 10px; /* Space above the bank name */
+            font-weight: bold; /* Bold text */
+            color: #333; /* Darker text color */
+        }
     </style>
 </head>
 
@@ -140,8 +180,11 @@ $org_id = $_SESSION['id']; // Assuming the organization ID is stored in the sess
 
 <body style="height: 100vh; width: 100%; margin: 0; padding: 0; position: relative;">
 
+    <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
+    <span id="successMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: green; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $successMessage; ?></span>    
+
     <div class="container" style=" height: 100%; width: 100%; padding: 12vh;">
-        <div style=" height: 25%; width: 100%; background-color: skyblue; border-top-left-radius: 20px; border-top-right-radius: 20px; position: relative; margin: 0;">  
+        <div style=" height: 30%; width: 100%; background-color: skyblue; border-top-left-radius: 20px; border-top-right-radius: 20px; position: relative; margin: 0;">  
             <!--  the button on the right of the cover -->
             <span id="div-button" style="position: absolute; bottom: 10px; right: 10px; display: flex; align-items:center; padding: 10px; background-color: grey; color: white; border-radius: 10px; gap: 10px;"><img src="../imgs/icon_image.png" alt="" style=" height: 30px; width: 30px;"><p>Add cover photo</p></span>      
             <!--  the profile image on the left -->
@@ -167,8 +210,11 @@ $org_id = $_SESSION['id']; // Assuming the organization ID is stored in the sess
                             <legend>Contact Number</legend>
                             <input type="number" value="<?php echo htmlspecialchars($userData['orgnumber'])?>" class="no-spinner">
                         </div>                 
-                    </form>
+                    </form>                
                     <div style="width: 100%; display: flex; justify-content: flex-end;">
+                        <form action="" method="POST">
+                            <button type="submit" name="logout_button">Logout</button>
+                        </form>
                         <button class="blue_buttons">Confirm</button>
                     </div> 
                 </div>
@@ -181,13 +227,22 @@ $org_id = $_SESSION['id']; // Assuming the organization ID is stored in the sess
                         </div>
                     </div>                
                 </div>
-                <div style="width: 100%; height: 50%; border: 2px solid black; border-bottom-right-radius: 20px; padding: 30px; position: relative;">
+                <div style="width: 100%; height: 100%; border: 2px solid black; border-bottom-right-radius: 20px; padding: 30px; position: relative">
                     <div>
                         <h2>QR Codes</h2>
                         <p style="color:lightgrey; font-size: 2vh;">**Upload images of your online banks (Maya, Gcash) for registration fees transaction**</p>
                     </div>
-                    <div>
-                        <?php echo displayQRCodes($org_id, $pdo); ?>
+                    <div class="qr-code-container" style=" display:flex; flex-wrap: wrap; margin: 20px 0px;">
+                        <?php if ($qrCodeData['success']): ?>
+                            <?php foreach ($qrCodeData['data'] as $qrCode): ?>
+                                <div class="qr-code-item" style=" background-color: lightgrey; border: 1px solid black; border-radius: 10px; padding: 10px; text-align: center; margin: 10px; transition: transform 0.2s;">
+                                    <img src="data:image/jpeg;base64,<?php echo base64_encode($qrCode['qr_code_image']); ?>" alt="QR Code" class="qr-code-image"/>
+                                    <p class="bank-name"><?php echo htmlspecialchars($qrCode['bank_name']); ?></p>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p><?php echo htmlspecialchars($qrCodeData['failed_message']); ?></p>
+                        <?php endif; ?>
                     </div>
                     <span style="position: absolute; bottom: 0; right: 0;">
                         <button class="blue_buttons" onclick="showModal('modal-overlay')">Upload</button>
@@ -201,7 +256,7 @@ $org_id = $_SESSION['id']; // Assuming the organization ID is stored in the sess
         <div id="modal-box" style="width: 400px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: azure; border-radius: 10px;">   
             <div style="height: 100%; position: relative; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 20px;">
                 <div style="width: 100%;">
-                    <form action="includes/upload_qr.php" method="POST" enctype="multipart/form-data">
+                    <form action="" method="POST" enctype="multipart/form-data">
                         <div style="display: flex; flex-direction: column; padding: 20px; height: 100%; gap: 10px;">
                             <label>Bank</label>
                             <input type="text" name="bank" placeholder="Maya - Gcash" required>
@@ -209,7 +264,7 @@ $org_id = $_SESSION['id']; // Assuming the organization ID is stored in the sess
                             <label for="modalImageInput" style="display: inline-block; padding: 5px 10px; background-color: #03ac13; color: white; font-size: 16px; border-radius: 5px; cursor: pointer; text-align: center; transition: background-color 0.3s ease;">Upload Image</label>
                             <input type="file" id="modalImageInput" name="qr_code_image" accept="image/*" onchange="updateImage(this, 'imagePreview')" required> 
                             <div style="width: 100%; display: grid; place-content: center;">
-                                <img id="imagePreview" src="" alt="Preview" style="height: 300px; width: 300px; display: none; margin-top: 10px; object-fit: cover;">  
+                                <img id="imagePreview" src="" alt="Preview" style="height: 500px; width: 300px; display: none; margin-top: 10px; object-fit: cover;">  
                             </div>                                                
                         </div> 
                         <div style="padding: 20px; width: 100%; display: flex; justify-content: flex-end;">
@@ -251,6 +306,27 @@ $org_id = $_SESSION['id']; // Assuming the organization ID is stored in the sess
                 this.style.display = "none";
                 document.getElementById("modal-box").style.display = "none"; // Hide modal when overlay is clicked
             }
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+        var errorMsg = document.getElementById("errorMessage");
+        var successMsg = document.getElementById("successMessage");
+
+        if (errorMsg.innerHTML.trim() !== "") {
+            errorMsg.style.display = "flex";
+            setTimeout(() => {
+            errorMsg.style.display = "none";
+            errorMsg.innerHTML = "";
+        }, 2000);
+        }
+
+        if (successMsg.innerHTML.trim() !== "") {
+            successMsg.style.display = "flex";
+            setTimeout(() => {
+            successMsg.style.display = "none";
+            successMsg.innerHTML = ""; 
+        }, 2000);
+        }
         });
     </script>
 
