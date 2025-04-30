@@ -122,11 +122,11 @@ if (isset($_SESSION["id"])) {
         <div class="nav_left">
             <ul class = "navbar">
                 <li><input type="button" class="logo"></li>
-                <li><a href="">Home</a></li>
+                <li><a href="org_homePage.php">Home</a></li>
                 <li style=" border-bottom: 2px solid green;"><a href="">Activity</a></li>
-                <li><a href="">Forum</a></li>
-                <li><a href="">Marketplace</a></li>
-                <li><a href="">Notification</a></li>
+                <li><a href="org_forumPage.php">Forum</a></li>
+                <li><a href="org_marketplace.php">Marketplace</a></li>
+                <li><a href="org_notification.php">Notification</a></li>
             </ul>
         </div>
         <div class="nav_right" id="nav_right_click" onclick="window.location.href='org_account.php';">  

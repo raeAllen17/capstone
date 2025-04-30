@@ -379,3 +379,12 @@ function getUserdata($pdo, $userId) {
     $userData = $stmt->fetch(PDO::FETCH_ASSOC);
     return $userData;
 }
+
+function getJoinerUserData($pdo, $userId) {
+    $stmt = $pdo->prepare("SELECT * FROM account_joiner WHERE id = :id");
+    $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $userData = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $userData;
+}

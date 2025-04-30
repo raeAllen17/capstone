@@ -16,7 +16,7 @@ if (isset($_POST["submit"])) {
 
         if (isset($result['user']['orgname'])) {
             $_SESSION["orgname"] = $result['user']['orgname'];
-            header("Location: org_createAct.php");
+            header("Location: org_homePage.php");
         } else {
             header("Location: joiner_homePage.php");
         }

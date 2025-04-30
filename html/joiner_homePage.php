@@ -1,7 +1,18 @@
 <?php
+session_start();
 require_once 'includes/dbCon.php';
 require_once 'includes/activity_store.php';
+require_once 'includes/formHandler.php';
 $data = displayActivity($pdo);
+
+if(isset($_SESSION['id'])){
+    $userId = $_SESSION['id']; 
+    $userData = getJoinerUserdata($pdo, $userId);
+    $joinerName = $userData['firstName'];
+} else {
+    
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -26,45 +37,51 @@ $data = displayActivity($pdo);
             text-align: center;
 
         }
+        th {
+            font-size: 2.5vh;
+        }
         #join-button {
             padding: 10px;
             border: none;border-radius: 10px;
             background-color: lightseagreen;
             color: white;
+            transition: transform 0.2s;
+        }
+        #join-button:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
 
-<body style=" height: 100vh; background-color: lightgrey;">
+<body style=" height: 100vh; background-color: white;">
 
     <nav id="nav">
             <div class="nav_left">
                 <ul class = "navbar">
                     <li><input type="button" class="logo"></li>
                     <li style=" border-bottom: 2px solid green;"><a href="" >Home</a></li>
-                    <li><a href="" >Activity</a></li>
-                    <li><a href="" >Forum</a></li>
-                    <li><a href="" >Marketplace</a></li>
-                    <li><a href="" >Notification</a></li>
+                    <li><a href="joiner_activityPage.php" >Activity</a></li>
+                    <li><a href="joiner_forumPage.php" >Forum</a></li>
+                    <li><a href="joiner_marketplace.php" >Marketplace</a></li>
+                    <li><a href="joiner_notification.php" >Notification</a></li>
                 </ul>
             </div>
-            <div class="nav_right">   
-                
+            <div class="nav_right" id="nav_right_click" onclick="window.location.href='walapa.php';">  
+                <img src="../imgs/defaultuser.png" style="height: 30px; width: 30px;"> 
+                <span style="display:flex; align-items:center;"><?php echo htmlspecialchars($joinerName); ?></span>
             </div>          
-        
     </nav> 
 
-    <div class="container" style=" padding-top: 7vh; display: grid; place-items: center;">
-        <div style=" padding: 40px;">
-            <div>
-                <h1 style=" font-size: 2.8em; margin-bottom: 10px;">Select and join the <br> adventure now!</h1>
-                <div style=" min-width: 1600px; height: 600px; padding: 20px; border: 2px solid black; border-radius: 20px; background-color:white;">
+    <div class="container" style=" padding-top: 7vh; display: grid; place-items: center;height: 100%;">
+        <div style=" padding: 40px; height: 100%; background-color: lightslategray ; width: 100%;">
+            <div style="width: 100%; display: grid; place-content: center;">
+                <h1 style=" font-size: 2.8em; margin-bottom: 10px; color: azure     ;">Select and join the <br> adventure now!</h1>
+                <div style=" min-width: 1400px; height: 600px; padding: 20px; border: 2px solid black; border-radius: 20px; background-color:white;">
                     <!-- php data here-->
                 <table>
                     <thead>
                     <tr>
                         <th>Activity Name</th>
-                        <th>Description</th>
                         <th>Location</th>
                         <th>Date</th>
                         <th>Distance</th>
@@ -77,9 +94,8 @@ $data = displayActivity($pdo);
                     <?php if ($data['success']):?>
                         <?php foreach( $data['data'] as $row):?>
                             <tr>
-                                <td style="font-weight: bold;"><?php echo htmlspecialchars($row['activity_name']); ?></tdstlye>
-                                <td style="max-width: 600px;"><?php echo htmlspecialchars($row['description']); ?></td>
-                                <td style="font-weight: bold;"><?php echo htmlspecialchars($row['location']); ?></td>
+                                <td><?php echo htmlspecialchars($row['activity_name']); ?></tdstlye>
+                                <td><?php echo htmlspecialchars($row['location']); ?></td>
                                 <td><?php $date = new DateTime($row['date']); echo $date->format('F j, Y');?></td>
                                 <td><?php echo htmlspecialchars($row['distance']); ?></td>
                                 <td><?php echo htmlspecialchars($row['difficulty']); ?></td>

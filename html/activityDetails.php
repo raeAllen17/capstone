@@ -61,7 +61,6 @@ if (isset($_GET['id'])) {
         background-repeat: no-repeat;
         overflow: hidden;
     }
-
     .slideshow::before {
         content: '';
         position: absolute;
@@ -72,6 +71,12 @@ if (isset($_GET['id'])) {
         background: linear-gradient(to right, rgba(124,124,124,1), rgba(0,0,0,0));
         pointer-events: none;
         z-index: 2;
+    }
+    #join-button {
+        transition: transform 0.2s ease-in;
+    }
+    #join-button:hover {
+        transform: scale(1.05);
     }
     </style>
 </head>
@@ -121,8 +126,8 @@ if (isset($_GET['id'])) {
                         </div>
                     </div>
                     <div class="slideshow" style="background-image: linear-gradient(to right, rgba(0,0,0,0), rgba(210,210,210,1)); height:500px; width: 700px;">
-                        <button style="position: absolute; bottom: 30px; right: 30px; padding: 10px 20px; background-color: rgba(0, 80, 0, 0.8); color: white; border: none; border-radius: 10px; cursor: pointer;">
-                            JOIN
+                        <button id="join-button" style="position: absolute; bottom: 30px; right: 30px; padding: 10px 20px; background-color: rgba(0, 80, 0, 0.8); color: white; border: none; border-radius: 10px; cursor: pointer;"
+                            onclick="showModal('modal-overlay')"> JOIN
                         </button>
                     </div>
                 </div>
@@ -133,10 +138,12 @@ if (isset($_GET['id'])) {
         </div>
     </div>
 
-    <div class="modal-box" id="participate-modal" style=" position: absolute; top: 50%; left: 50%; z-index: 3; transform: translate(-50%, -50%); display: none;'">
-        <div style="height: 500px; width: 400px; background-color: lightgrey; padding: 10px;">
-            <div style="">
-                
+    <div id="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(128, 128, 128, 0.7); display: none; justify-content: center; align-items: center; z-index: 999;">
+        <div id="modal-box" id="participate-modal" style=" position: absolute; top: 50%; left: 50%; z-index: 3; transform: translate(-50%, -50%); display: none ;'">
+            <div style="height: 500px; width: 400px; background-color: white; border: 2px solid black; border-radius: 20px; padding: 10px;">
+                <div style="">
+                    <!-- all data including picture and a submission of proof of payment-->
+                </div>
             </div>
         </div>
     </div>
@@ -154,8 +161,19 @@ if (isset($_GET['id'])) {
             currentIndex = (currentIndex + 1) % images.length;
             setTimeout(showSlide, 1000);
         }
-
         document.addEventListener("DOMContentLoaded", showSlide);
+
+        function showModal() {
+            document.getElementById("modal-box").style.display = "block";
+            document.getElementById("modal-overlay").style.display = "flex";
+        }
+
+        document.getElementById("modal-overlay").addEventListener("click", function(event) {
+            if (event.target === this) {
+                this.style.display = "none";
+                document.getElementById("modal-box").style.display = "none"; // Hide modal when overlay is clicked
+            }
+        });
     </script>
 </body>
 </html>
