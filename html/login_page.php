@@ -3,6 +3,13 @@ session_start();
 $error_message = "";
 require_once 'includes/formHandler.php';
 require_once 'includes/dbCon.php';
+
+if (isset($_SESSION['id'])) {
+    unset($_SESSION['id']);
+    header('location: login_page.php');
+    exit();
+}
+
 if (isset($_POST["submit"])) {
     $email = $_POST["email"];
     $password = $_POST["password"];

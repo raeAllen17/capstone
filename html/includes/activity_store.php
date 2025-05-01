@@ -203,3 +203,9 @@ function actRegis($pdo, $userData, $file){
 
     return $result;
 }
+
+function getParticipantRequest($pdo, $orgId) {
+    $stmt = $pdo->prepare("SELECT participant_id, image FROM participants WHERE org_id = ?");
+    $stmt->execute([$orgId]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}

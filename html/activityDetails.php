@@ -9,7 +9,6 @@ if (!isset($_SESSION['id'])) {
     header('Location: landing_page.php');
     exit();
 }
-
 //SESSION MESSAGES 
 $errorMessage = "";
 $successMessage = "";
@@ -56,28 +55,6 @@ if (isset($_GET['id'])) {
         }
     }
 }
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['proof-image'])) {
-    $org_id = $_POST['org_id'];
-    $activity_id = $_POST['activity_id'];
-    $joiner_id = $_SESSION['id'];
-
-    $userData = [
-        'user_id' => $joiner_id,
-        'activity_id' => $activity_id,
-        'org_id' => $org_id
-    ];
-
-    $result = actRegis($pdo, $userData, $_FILES['proof-image']);
-
-    if ($result['success']) {
-        $_SESSION['success_message'] = "Your reservation is up for approval!";
-        header("Location: activityDetails.php?id=" . urlencode($activity_id));
-        exit();
-    } else {
-        $_SESSION['error_message'] = "Registration unsuccessful!";
-    }
-} 
 
 $qrCodeData = displayQRCodes($pdo, $org_id);
 ?>
@@ -262,12 +239,12 @@ $qrCodeData = displayQRCodes($pdo, $org_id);
                         <h2 style=" color: lightgreen;">₱<?php echo htmlspecialchars($activities['price']/2); ?></h2>
                     </div>
                     <div style=" padding: 10px; width: 100%; display: grid; place-content: center;">
-                        <form action="" method="POST" enctype="multipart/form-data">
+                        <form action="../html/includes/post_methods.php" id="proofForm" method="POST" enctype="multipart/form-data">
                             <input type="file" accept="image/*" required name="proof-image" style=" border: 1px solid black; padding: 10px; border-radius: 20px;">
                             <input type="hidden" name="org_id" value="<?php echo htmlspecialchars($org_id); ?>">
                             <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($activityId); ?>">
                             <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($userId); ?>">
-                            <button style="padding: 10px; color: white; background-color: green; border: none; border-radius: 15px;">Send</button>
+                            <button style="padding: 10px; color: white; background-color: green; border: none; border-radius: 15px;" type="submit" form="proofForm">Send</button>
                         </form>
                     </div>
                 </div>      

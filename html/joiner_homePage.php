@@ -10,7 +10,7 @@ if(isset($_SESSION['id'])){
     $userData = getJoinerUserdata($pdo, $userId);
     $joinerName = $userData['firstName'];
 } else {
-    header('location: login_page.php;');
+    header('location: login_page.php');
     exit();
 }
 
