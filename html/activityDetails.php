@@ -1,7 +1,26 @@
 <?php
+session_start();
 require_once 'includes/dbCon.php';
 require 'includes/activity_store.php';
 
+$joiner_id = $_SESSION['id'];
+
+if (!isset($_SESSION['id'])) {
+    header('Location: landing_page.php');
+    exit();
+}
+
+//SESSION MESSAGES 
+$errorMessage = "";
+$successMessage = "";
+if (isset($_SESSION['error_message']) && $_SESSION['error_message'] !== "") {
+    $errorMessage = $_SESSION['error_message'];
+    unset($_SESSION['error_message']); 
+}
+if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") {
+    $successMessage = $_SESSION['success_message'];
+    unset($_SESSION['success_message']); 
+}
 
 if (isset($_GET['id'])) {
 
@@ -36,10 +55,31 @@ if (isset($_GET['id'])) {
             $images[] = '../uploads/' . $basename;
         }
     }
-} else {
-
 }
 
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['proof-image'])) {
+    $org_id = $_POST['org_id'];
+    $activity_id = $_POST['activity_id'];
+    $joiner_id = $_SESSION['id'];
+
+    $userData = [
+        'user_id' => $joiner_id,
+        'activity_id' => $activity_id,
+        'org_id' => $org_id
+    ];
+
+    $result = actRegis($pdo, $userData, $_FILES['proof-image']);
+
+    if ($result['success']) {
+        $_SESSION['success_message'] = "Your reservation is up for approval!";
+        header("Location: activityDetails.php?id=" . urlencode($activity_id));
+        exit();
+    } else {
+        $_SESSION['error_message'] = "Registration unsuccessful!";
+    }
+} 
+
+$qrCodeData = displayQRCodes($pdo, $org_id);
 ?>
 
 <!DOCTYPE html>
@@ -78,9 +118,37 @@ if (isset($_GET['id'])) {
     #join-button:hover {
         transform: scale(1.05);
     }
+    .qr-code-item:hover {
+        transform: scale(1.05); /* Slightly enlarge on hover */
+    }
+    .qr-code-image {
+        height: 200px;
+        width: 200px;
+        object-fit: cover; 
+        border-radius: 5px; 
+    }
+    .bank-name {
+        margin-top: 10px; /* Space above the bank name */
+        font-weight: bold; /* Bold text */
+        color: #333; /* Darker text color */
+    }
+    ::-webkit-scrollbar {
+    width: 12px; 
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent; 
+    }
+    ::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.5); 
+        border-radius: 10px;
+        border: 3px solid transparent;
+    }
     </style>
 </head>
 <body style="height: 100vh; width: 100%;">
+
+    <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
+    <span id="successMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: green; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $successMessage; ?></span>    
 
     <nav id="nav">
             <div class="nav_left">
@@ -116,6 +184,7 @@ if (isset($_GET['id'])) {
                             </p>
                         </div>
                         <div style="color: white; width: 900px; display: flex; justify-content: center; align-items: center; gap: 70px;">
+                            <h2 style=" color: lightblue;">₱<?php echo htmlspecialchars($activities['price']); ?></h2>
                             <h2><?php echo htmlspecialchars($activities['difficulty']); ?></h2>
                             <h2><?php echo htmlspecialchars($activities['distance']); ?></h2>
                             <h2><?php echo htmlspecialchars($activities['current_participants']); ?>/<?php echo htmlspecialchars($activities['participants']); ?></h2>
@@ -140,15 +209,83 @@ if (isset($_GET['id'])) {
 
     <div id="modal-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(128, 128, 128, 0.7); display: none; justify-content: center; align-items: center; z-index: 999;">
         <div id="modal-box" id="participate-modal" style=" position: absolute; top: 50%; left: 50%; z-index: 3; transform: translate(-50%, -50%); display: none ;'">
-            <div style="height: 500px; width: 400px; background-color: white; border: 2px solid black; border-radius: 20px; padding: 10px;">
+            <div style=" height: auto; width: 800px; background-color: white; border: 2px solid black; border-radius: 20px; padding: 10px; display: flex; flex-direction:column;">
                 <div style="">
-                    <!-- all data including picture and a submission of proof of payment-->
+                    
                 </div>
+                <div style=" height: 400px; width: 100%; border-radius: 10px; overflow: auto; padding: 20px; box-shadow: inset 3px 3px 8px 5px rgba(0, 0, 0, 0.3);">
+                    <h2>Terms and Conditions for Travel Events</h2><br>           
+                    <p><strong>1. Reservation and Payment Requirements</strong><br>To secure a spot in any travel event, individuals must pay either 50% of the total cost or the full amount in advance. This payment serves as confirmation of their reservation. The deposit must be completed at least 12 days before the scheduled trip. Additionally, participants must present proof of deposit on the day of travel. Any remaining balance must be fully settled before departure.</p><br>
+                    <p><strong>2. Availability of Slots and Adjustments </strong><br>Seat availability is updated in real-time, and slots may be adjusted based on the trip's logistics and the number of confirmed participants. Travelers are advised to secure their reservations early to ensure participation.</p><br>
+                    <p><strong>3. Rescheduling Due to Minimum Guest Requirement</strong><br>In cases where the number of registered participants falls below nine (9), the organizer has the right to reschedule the trip. If the trip is rescheduled, payments already made may be transferred to the new travel date.</p><br>
+                    <p><strong>4. Cancellations Due to Unforeseen Circumstances</strong><br>The organizer reserves the right to cancel or reschedule a trip due to weather conditions or other unavoidable situations. These changes may occur up to a day before the scheduled departure for safety and logistical reasons.</p><br>
+                    <p><strong>5. Refund Policy and Deduction Fees</strong><br>• If a participant cancels between one month and 12 working days before the event, a Php 400 deduction applies to their initial payment. The remainder will be refunded. <br> • If a participant withdraws at the last minute, they must pay the full amount unless they transfer their slot and payment to a designated proxy. <br> • Payments cannot be transferred between different participants already part of the trip.</p><br>
+                    <p><strong>6. Rules for Transferring Reserved Slots</strong><br>• A participant may transfer their reserved slot to another person going to the same destination—provided the organizer is notified at least 10 working days before departure. Each reservation can only be transferred once.<br> • Transfers between different trips or destinations are not allowed within 10 days of departure. Once inside this period, payments cannot be moved to another trip. <br> • A participant can transfer their slot and deposit to another individual—as long as the recipient is not already registered for the scheduled trip.</p><br>
+                    <p><strong>7. Refund Guidelines for Organizer-Initiated Cancellations</strong><br>• If the organizer cancels or reschedules a trip due to bad weather, low attendance, or other external reasons, participants can: a. Transfer their payment to another trip the organizer is offering. b. Apply the payment toward the rescheduled trip. <br> • If a trip is canceled mid-travel due to uncontrollable factors, the organizer may issue a refund, deducting reasonable fees already paid.</p><br>
+                    <p><strong>8. No Refund Conditions</strong><br>Refunds will not be given under the following circumstances: <br> • The participant fails to arrive on the scheduled travel date. <br> • The participant does not arrive on time for departure. <br> • No request for slot transfer was submitted, and the participant misses the trip entirely. <br></p><br>
+                    <p><strong>9. Use of Photos and Media Content</strong><br> All photos and videos captured during the trip may be used by the organizer for promotional and marketing purposes.</p><br>
+                    <p><strong>10. Right to Refuse Participation</strong><br> The organizer reserves the right to deny or remove participants due to legitimate concerns, including but not limited to: <br> • Disorderly behavior or misconduct <br> •	Serious medical conditions that pose risks during the trip <br> • Intoxication or substance abuse<br> •	Possession of illegal or dangerous items<br></p><br>
+                    <p><strong>11. Complaints and Issue Resolution</strong><br> If a participant encounters any issues or concerns during the trip, they must immediately inform the organizer or an authorized representative. Verbal complaints must be followed up in writing and submitted to the trip guide or local agent.</p><br>
+                    <p><strong>12. Participant Responsibility and Preparedness</strong><br> • Participants are expected to act responsibly and prepare adequately for the trip based on weather conditions. <br> •	They should bring any necessary medication for personal health needs.<br> •	If a participant has a medical condition, they must inform the organizer before the trip to ensure proper arrangements.<br> • All participants should be physically and mentally capable of undertaking the travel activities<br>.</p><br>
+                    <p><strong>13. Liability and Assumption of Risk</strong><br> By joining the trip, participants acknowledge that adventure travel carries risks. In the event of harm, injury, or property loss, participants assume all responsibility and will not hold the organizer liable.</p><br>
+                    <p><strong>14. Limitations of Liability</strong><br> The organizer is not responsible for any injuries, illnesses, loss of belongings, or expenses resulting from: <br> • The participant's own actions.<br> • Unavoidable third-party incidents.<br> • Natural disasters or unforeseen circumstances.<br></p><br>
+                    <p><strong>15. Non-Contractual Services</strong><br> The organizer is not responsible for any additional services provided by external suppliers that were not part of the contract.</p><br>
+                    <p><strong>16. Agreement to Terms and Conditions</strong><br> By participating in the trip, the individual confirms that they have read, understood, and agreed to the organizer’s terms and conditions.</p><br>
+                </div>
+                <div style=" width: 100%; padding: 10px;">
+                    <input type="checkbox" id="terms">
+                    <label for="terms">Do you accept the Terms and Conditions?</label>
+                </div>
+                <div id="pop-up-container" style=" height: 300px; overflow: auto; display: none;">
+                    <div class="pop-up" style="padding: 20px;">
+                        <h4>As stated in Terms and Conditions above, half of the price are required to be deposited for slot registration.</h4><br>
+                        <p>You can send your registrations registration fees here:</p>
+                    </div>
+                    <div class="pop-up" id="qr-codes" style=" display: flex; justify-content: center; align-items: center; width: 100%;">
+                        <div class="qr-code-container" style=" display:flex; flex-wrap: wrap; margin: 20px 0px;">
+                            <?php if ($qrCodeData['success']): ?>
+                                    <?php foreach ($qrCodeData['data'] as $qrCode): ?>
+                                        <div class="qr-code-item" style=" background-color: lightgrey; border: 1px solid black; border-radius: 10px; padding: 10px; text-align: center; margin: 10px; transition: transform 0.2s;">
+                                            <img src="data:image/jpeg;base64,<?php echo base64_encode($qrCode['qr_code_image']); ?>" alt="QR Code" class="qr-code-image"/>
+                                            <p class="bank-name"><?php echo htmlspecialchars($qrCode['bank_name']); ?></p>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <p><?php echo htmlspecialchars($qrCodeData['failed_message']); ?></p>
+                            <?php endif; ?>
+                        </div>    
+                    </div>
+                    <div style="padding: 10px; width: 100%; text-align: center;">
+                        <h4>Activity price: </h4>
+                        <h2 style=" color: lightseagreen;">₱<?php echo htmlspecialchars($activities['price']); ?></h2>
+                        <h4>Required deposit amount:</h4>
+                        <h2 style=" color: lightgreen;">₱<?php echo htmlspecialchars($activities['price']/2); ?></h2>
+                    </div>
+                    <div style=" padding: 10px; width: 100%; display: grid; place-content: center;">
+                        <form action="" method="POST" enctype="multipart/form-data">
+                            <input type="file" accept="image/*" required name="proof-image" style=" border: 1px solid black; padding: 10px; border-radius: 20px;">
+                            <input type="hidden" name="org_id" value="<?php echo htmlspecialchars($org_id); ?>">
+                            <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($activityId); ?>">
+                            <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($userId); ?>">
+                            <button style="padding: 10px; color: white; background-color: green; border: none; border-radius: 15px;">Send</button>
+                        </form>
+                    </div>
+                </div>      
             </div>
         </div>
     </div>
 
     <script>
+
+        const checkChanged = document.getElementById("terms");
+        checkChanged.addEventListener("change", function() {
+        if (this.checked) {
+            document.getElementById("pop-up-container").style.display = "block";
+        } else {
+            document.getElementById("pop-up-container").style.display = "none";
+        }
+        });
+
         const images = <?php echo json_encode($images); ?>;
         let currentIndex = 0;
 
@@ -173,6 +310,27 @@ if (isset($_GET['id'])) {
                 this.style.display = "none";
                 document.getElementById("modal-box").style.display = "none"; // Hide modal when overlay is clicked
             }
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+        var errorMsg = document.getElementById("errorMessage");
+        var successMsg = document.getElementById("successMessage");
+
+        if (errorMsg.innerHTML.trim() !== "") {
+            errorMsg.style.display = "flex";
+            setTimeout(() => {
+            errorMsg.style.display = "none";
+            errorMsg.innerHTML = "";
+        }, 2000);
+        }
+
+        if (successMsg.innerHTML.trim() !== "") {
+            successMsg.style.display = "flex";
+            setTimeout(() => {
+            successMsg.style.display = "none";
+            successMsg.innerHTML = ""; 
+        }, 2000);
+        }
         });
     </script>
 </body>

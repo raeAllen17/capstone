@@ -187,6 +187,16 @@ if (isset($_SESSION["id"])) {
                                         <input type="hidden" name="distance" id="combined_distance">
                                     </div>
                                 </div>
+                                <div>
+                                    <p>Price</p>
+                                    <div style="position: relative;">
+                                        <input type="number" step="0.1" id="price_value" style="padding-right: 45px; width: 100%;" class="input_fields" required>
+                                        <select id="currency_symbol" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: transparent; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
+                                            <option value="PHP">₱</option>
+                                        </select>
+                                        <input type="hidden" name="price" id="final_price">
+                                    </div>
+                                </div>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 20px;">
                                 <div>
@@ -232,6 +242,7 @@ if (isset($_SESSION["id"])) {
         
         let currentSlideIndex = 0;
         let images = [];
+        let pickupPoints = [];
 
         function previewImages(event) {
             const files = event.target.files;
@@ -278,103 +289,109 @@ if (isset($_SESSION["id"])) {
                 document.getElementById('combined_distance').value = value + ' ' + unit;
             }
         });
+        document.addEventListener("DOMContentLoaded", function() {
+            let priceInput = document.getElementById("price_value");
+            let hiddenPrice = document.getElementById("final_price");
 
-
-        document.addEventListener('DOMContentLoaded', function() {
-        const addBtn = document.getElementById('add_pickup_btn');
-        const viewBtn = document.getElementById('view_pickup_btn');
-        const pickupInput = document.getElementById('pickup_input');
-        const pickupDropdown = document.getElementById('pickup_dropdown');
-        const pickupList = document.getElementById('pickup_list');
-        const hiddenInput = document.getElementById('pickup_locations_hidden');
-
-        const pickupPoints = [];
-
-        // Add button for input
-        addBtn.addEventListener('click', function() {
-            const point = pickupInput.value.trim();
-            if (point && !pickupPoints.includes(point)) {
-                pickupPoints.push(point);
-                updatePickupList();
-                updateHiddenInput();
-            }
-            pickupInput.value = '';  // Clear input after adding
+            priceInput.addEventListener("input", function() {
+                hiddenPrice.value = priceInput.value;
+            });
         });
 
-        // Keyboard Enter key for adding point
-        pickupInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addBtn.click();  // Trigger the same action as clicking the "+" button
-            }
-        });
+        //dropdown menu on pickup locations
+        document.addEventListener("DOMContentLoaded", function() {
+            let pickupInput = document.getElementById("pickup_input");
+            let addPickupBtn = document.getElementById("add_pickup_btn");
+            let viewPickupBtn = document.getElementById("view_pickup_btn");
+            let pickupDropdown = document.getElementById("pickup_dropdown");
+            let pickupList = document.getElementById("pickup_list");
+            let pickupHidden = document.getElementById("pickup_locations_hidden");
 
-        // Dropdown visibility toggle
-        viewBtn.addEventListener('click', function() {
-            const isVisible = pickupDropdown.style.display === 'block';
-            pickupDropdown.style.display = isVisible ? 'none' : 'block';
-            viewBtn.setAttribute('aria-expanded', !isVisible);
-        });
+            let pickupPoints = [];
 
-        // Close dropdown if clicked outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.matches('#view_pickup_btn') && 
-                !e.target.matches('#pickup_dropdown') && 
-                !e.target.closest('#pickup_dropdown')) {
-                pickupDropdown.style.display = 'none';
-            }
-        });
+            // Function to update pickup list display
+            function updatePickupList() {
+                pickupList.innerHTML = "";
 
-        // Update the pickup list display
-        function updatePickupList() {
-            pickupList.innerHTML = '';
-            
-            if (pickupPoints.length === 0) {
-                const li = document.createElement('li');
-                li.textContent = 'No pickup points added';
-                li.style.padding = '10px';
-                li.style.color = '#777';
-                pickupList.appendChild(li);
-            } else {
-                pickupPoints.forEach((point, index) => {
-                    const li = document.createElement('li');
-                    li.style.padding = '8px 10px';
-                    li.style.borderBottom = '1px solid #eee';
-                    li.style.display = 'flex';
-                    li.style.justifyContent = 'space-between';
-                    li.style.alignItems = 'center';
-                    
-                    const pointText = document.createElement('span');
-                    pointText.textContent = point;
-                    
-                    const removeBtn = document.createElement('button');
-                    removeBtn.textContent = '×';
-                    removeBtn.style.background = 'none';
-                    removeBtn.style.border = 'none';
-                    removeBtn.style.color = 'red';
-                    removeBtn.style.fontSize = '18px';
-                    removeBtn.style.cursor = 'pointer';
-                    removeBtn.onclick = function() {
-                        pickupPoints.splice(index, 1); 
-                        updatePickupList();
-                        updateHiddenInput();
-                    };
-                    
-                    li.appendChild(pointText);
-                    li.appendChild(removeBtn);
+                if (pickupPoints.length === 0) {
+                    const li = document.createElement("li");
+                    li.textContent = "No pickup points added";
+                    li.style.padding = "10px";
+                    li.style.color = "#777";
                     pickupList.appendChild(li);
-                });
+                } else {
+                    pickupPoints.forEach((point, index) => {
+                        const li = document.createElement("li");
+                        li.style.padding = "8px 10px";
+                        li.style.borderBottom = "1px solid #eee";
+                        li.style.display = "flex";
+                        li.style.justifyContent = "space-between";
+                        li.style.alignItems = "center";
+
+                        const pointText = document.createElement("span");
+                        pointText.textContent = point;
+
+                        const removeBtn = document.createElement("button");
+                        removeBtn.textContent = "×";
+                        removeBtn.style.background = "none";
+                        removeBtn.style.border = "none";
+                        removeBtn.style.color = "red";
+                        removeBtn.style.fontSize = "18px";
+                        removeBtn.style.cursor = "pointer";
+                        removeBtn.onclick = function () {
+                            pickupPoints.splice(index, 1);
+                            updatePickupList();
+                            updateHiddenInput();
+                        };
+
+                        li.appendChild(pointText);
+                        li.appendChild(removeBtn);
+                        pickupList.appendChild(li);
+                    });
+                }
             }
-        }
 
-        function updateHiddenInput() {
-            hiddenInput.value = JSON.stringify(pickupPoints);
-        }
+            // Function to update hidden input
+            function updateHiddenInput() {
+                pickupHidden.value = JSON.stringify(pickupPoints); // Stores JSON format for PHP decoding
+            }
 
-        // Initialize
-        updatePickupList();
-        updateHiddenInput();
-    });
+            // Add new pickup point
+            addPickupBtn.addEventListener("click", function() {
+                let pickupPoint = pickupInput.value.trim();
+                if (pickupPoint && !pickupPoints.includes(pickupPoint)) {
+                    pickupPoints.push(pickupPoint);
+                    updatePickupList();
+                    updateHiddenInput();
+                    pickupInput.value = ""; // Clear input
+                }
+            });
+
+            // Allow adding via Enter key
+            pickupInput.addEventListener("keypress", function(e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    addPickupBtn.click();
+                }
+            });
+
+            // Toggle pickup dropdown visibility
+            viewPickupBtn.addEventListener("click", function() {
+                pickupDropdown.style.display = (pickupDropdown.style.display === "block") ? "none" : "block";
+            });
+
+            // Close dropdown if clicked outside
+            document.addEventListener("click", function(e) {
+                if (!e.target.closest("#pickup_dropdown") && e.target !== viewPickupBtn) {
+                    pickupDropdown.style.display = "none";
+                }
+            });
+
+            // Initialize pickup list and hidden input
+            updatePickupList();
+            updateHiddenInput();
+        });
+
 
     </script>
 </body>

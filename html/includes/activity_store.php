@@ -14,7 +14,11 @@ function createActivity($pdo, $userData, $userId){
     $date = $userData["date"];
     $distance = $userData["distance"];
     $difficulty = $userData["difficulty"];
+    $price = $userData["price"];
     $participants = $userData["participants"];
+
+    $pickup_locations = isset($userData["pickup_locations"]) ? json_decode($userData["pickup_locations"], true) : [];
+    $pickup_locations = implode(',', $pickup_locations);
 
     $imagePaths = [];
     if (isset($_FILES['images'])) {
@@ -34,11 +38,11 @@ function createActivity($pdo, $userData, $userId){
     $images = implode(',', $imagePaths);
 
     // Prepare and bind
-    $stmt = $pdo->prepare("INSERT INTO activities (org_id, activity_name, description, location, date, distance, difficulty, participants, images) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO activities (org_id, activity_name, description, location, date, distance, difficulty, price, participants, pickup_locations, images) VALUES (?,?,?, ?, ?, ?, ?, ?, ?, ?, ?)");
     
 
     // Execute the statement
-    if ($stmt->execute([$org_id, $activity_name, $description, $location, $date, $distance, $difficulty, $participants, $images])) {
+    if ($stmt->execute([$org_id, $activity_name, $description, $location, $date, $distance, $difficulty, $price, $participants,$pickup_locations, $images])) {
         $result['success'] = true;
         $result['success_message'] = "New activity created successfully";
     } else {
@@ -88,7 +92,7 @@ function getactivities($pdo, $activityId)  {
 //FUNCTIONS FOR PROFILE SETUPS
 
 function uploadQRCode($file, $uploadData, $pdo) {
-    session_start(); // Ensure session is active
+    session_start(); 
 
     $allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     $maxFileSize = 10 * 1024 * 1024;
@@ -158,6 +162,43 @@ function displayQRCodes($pdo, $userId) {
         $result['success'] = true;
     } catch (PDOException $e) {
         $result['failed_message'] = $e->getMessage();
+    }
+
+    return $result;
+}
+
+function actRegis($pdo, $userData, $file){
+    $result = [
+        'success' => false,
+        'message' => '',
+    ];
+
+    $joinerId = $userData['user_id'];
+    $activityId = $userData['activity_id'];
+    $orgId = $userData['org_id'];
+
+    if (isset($file) && $file['error'] === UPLOAD_ERR_OK) {
+        $imageData = file_get_contents($file['tmp_name']);
+
+        try {
+            $stmt = $pdo->prepare("INSERT INTO participants (org_id, activity_id, participant_id, image) VALUES (:org_id, :activity_id, :participant_id, :image)");
+            $stmt->bindParam(':org_id', $orgId, PDO::PARAM_INT);
+            $stmt->bindParam(':activity_id', $activityId, PDO::PARAM_INT);
+            $stmt->bindParam(':participant_id', $joinerId, PDO::PARAM_INT);
+            $stmt->bindParam(':image', $imageData, PDO::PARAM_LOB);
+
+            $pdo->beginTransaction();
+            $success = $stmt->execute();
+            $pdo->commit();
+
+            $result['success'] = $success;
+            $result['message'] = $success ? "Registration successful." : "Failed to register.";
+        } catch (PDOException $e) {
+            $pdo->rollBack();
+            $result['message'] = "Database error: " . $e->getMessage();
+        }
+    } else {
+        $result['message'] = "Error uploading image.";
     }
 
     return $result;
