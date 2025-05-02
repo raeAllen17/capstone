@@ -204,8 +204,54 @@ function actRegis($pdo, $userData, $file){
     return $result;
 }
 
-function getParticipantRequest($pdo, $orgId) {
-    $stmt = $pdo->prepare("SELECT participant_id, image FROM participants WHERE org_id = ?");
-    $stmt->execute([$orgId]);
-    return $stmt->fetch(PDO::FETCH_ASSOC);
+function getParticipantRequest($pdo, $orgId, $activityId) {
+    $stmt = $pdo->prepare("
+        SELECT p.id, j.firstName, j.lastName, p.image 
+        FROM participants p
+        JOIN account_joiner j ON p.participant_id = j.id 
+        WHERE p.org_id = ? AND p.activity_id = ?
+    ");
+    $stmt->execute([$orgId, $activityId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch all participants
 }
+
+function displayOrgActivities($pdo, $orgId) {
+
+    $result = [
+        'success' => false,
+        'failed_message' => '',
+        'success_message' => '',
+        'data' => []
+    ];
+
+    try {
+        $query = "SELECT * FROM activities WHERE org_id = ?";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([$orgId]);
+        $result['data'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result['success'] = true;
+    } catch (PDOException $e) {
+        $result['failed_message'] = $e->getMessage();
+    }
+
+    return $result;
+}
+
+function notifyParticipant($pdo, $participantId){
+
+$sql = "UPDATE your_table
+            SET notified = 'yes'
+            WHERE participant_id = :participantId
+            AND notified = 'no'";
+
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(['participantId' => $participantId]);
+
+
+    if ($stmt->rowCount() > 0) {
+        echo "Notification status updated to 'yes' for participant ID $participantId.";
+    } else {
+        echo "No rows updated (either already notified or no matching record).";
+    }
+}     

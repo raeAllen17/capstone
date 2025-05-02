@@ -4,6 +4,8 @@ require_once 'includes/dbCon.php';
 require_once 'includes/formHandler.php';
 require_once 'includes/activity_store.php';
 
+$activityId ='';
+
 if (isset($_SESSION['id'])) {
     $userId = $_SESSION['id']; 
     $userData = getUserdata($pdo, $userId);
@@ -17,10 +19,8 @@ if (isset($_SESSION['id'])) {
 
 
 //fetching functions 
-$data = displayActivity($pdo);
-$activityId = $data['id'];
-echo $activityId;
-$participantData = getParticipantRequest($pdo, $userId);
+$data = displayOrgActivities($pdo, $userId);
+$participants = getParticipantRequest($pdo, $userId, $activityId);
 ?>
 
 <!DOCTYPE html>
@@ -121,10 +121,12 @@ $participantData = getParticipantRequest($pdo, $userId);
                                     <td><?php echo htmlspecialchars($row['location']); ?></td>
                                     <td><?php echo htmlspecialchars($row['description']);?></td>
                                     <td><?php echo htmlspecialchars($row['price']); ?></td>
-                                    <td><?php echo htmlspecialchars($row['current_participants']);?></td>
+                                    <td><?php echo htmlspecialchars($row['participants']);?></td>
                                     <td><?php $date = new DateTime($row['date']); echo $date->format('F j, Y');?></td>
                                     <td>
-                                        <button type="button" id="manage-button" class="button-buttons" onclick="showPopup(<?php echo $row['id']; ?>)">Manage</button>
+                                    <a href="org_manageParticipant.php?id=<?php echo htmlspecialchars($row['id']); ?>">
+                                    <button class="button-buttons" id="join-button">Manage</button>
+                                    </a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -140,6 +142,38 @@ $participantData = getParticipantRequest($pdo, $userId);
             <div id="pop-up" style=" height: auto; width: 100%; display: none; flex-wrap:wrap;justify-content: space-evenly; align-items: center;">
                 <div style="width: 30%; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Requests</h2>
+                    <table>
+                    <thead>
+                        <tr>
+                            <th>Participant Name</th>
+                            <th>Image</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($participants && count($participants) > 0): ?>
+                            <?php foreach ($participants as $participant): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($participant['firstName'] . ' ' . $participant['lastName']); ?></td>
+                                    <td>
+                                        <?php if (!empty($participant['image'])): ?>
+                                            <?php
+                                            $imgData = base64_encode($participant['image']);
+                                            $src = 'data:image/jpeg;base64,' . $imgData;
+                                            ?>
+                                            <img src="<?php echo $src; ?>" alt="Participant Image" style="max-width:100px; max-height:100px;">
+                                        <?php else: ?>
+                                            No image
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="2">No participants found.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
                 </div>
                 <div style="width: 30%; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Active</h2>
@@ -161,7 +195,6 @@ $participantData = getParticipantRequest($pdo, $userId);
             console.error("Popup element not found!");
         }
     }
-
     </script>
-</body>
+    </body>
 </html>

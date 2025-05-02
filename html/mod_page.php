@@ -122,7 +122,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     .button_accept {
-        background-image: url('http://localhost/JOYn/JOyn/imgs/icon_check.png');
+        background-image: url('../imgs/icon_check.png');
         background-size: cover;
         background-position: center; 
         height: 30px;

@@ -34,7 +34,7 @@ nav.scrolled {
 }
 
 .logo {
-    background: url('http://localhost/JOYn/JOYn/imgs/logo.png') no-repeat center center;
+    background: url('../imgs/logo.png') no-repeat center center;
     background-size: contain;  
     border: none;             
     width: 100px;              
