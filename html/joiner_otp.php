@@ -21,7 +21,7 @@ if (!isset($_SESSION['email'])) {
 
             if ($result['success']) {
                 $message = $result['success_message'];
-                header("joiner_homePage.php");
+                header("Location: joiner_homePage.php");
                 exit();
             } else {
                 $message = $result['failed_message'];

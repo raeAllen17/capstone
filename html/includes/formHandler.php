@@ -124,7 +124,7 @@ function joiner_otp($pdo, $userData){
     $otp = $userData['otp'];
 
     try {
-        $query = "SELECT otp,email FROM account_joiner WHERE email = :email";
+        $query = "SELECT otp,email, otp_sent_at FROM account_joiner WHERE email = :email";
         $stmt = $pdo->prepare($query);
         $stmt->execute([':email' => $email]);
 

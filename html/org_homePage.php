@@ -140,40 +140,40 @@ $participants = getParticipantRequest($pdo, $userId, $activityId);
                 </div>
             </div>
             <div id="pop-up" style=" height: auto; width: 100%; display: none; flex-wrap:wrap;justify-content: space-evenly; align-items: center;">
-                <div style="width: 30%; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
+                <div style="width: 30%; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D; overflow: auto; ">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Requests</h2>
-                    <table>
-                    <thead>
-                        <tr>
-                            <th>Participant Name</th>
-                            <th>Image</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($participants && count($participants) > 0): ?>
-                            <?php foreach ($participants as $participant): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($participant['firstName'] . ' ' . $participant['lastName']); ?></td>
-                                    <td>
-                                        <?php if (!empty($participant['image'])): ?>
-                                            <?php
-                                            $imgData = base64_encode($participant['image']);
-                                            $src = 'data:image/jpeg;base64,' . $imgData;
-                                            ?>
-                                            <img src="<?php echo $src; ?>" alt="Participant Image" style="max-width:100px; max-height:100px;">
-                                        <?php else: ?>
-                                            No image
-                                        <?php endif; ?>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
+                    <table style=" height: auto; overflow: auto;">
+                        <thead>
                             <tr>
-                                <td colspan="2">No participants found.</td>
+                                <th>Participant Name</th>
+                                <th>Image</th>
                             </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php if ($participants && count($participants) > 0): ?>
+                                <?php foreach ($participants as $participant): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($participant['firstName'] . ' ' . $participant['lastName']); ?></td>
+                                        <td>
+                                            <?php if (!empty($participant['image'])): ?>
+                                                <?php
+                                                $imgData = base64_encode($participant['image']);
+                                                $src = 'data:image/jpeg;base64,' . $imgData;
+                                                ?>
+                                                <img src="<?php echo $src; ?>" alt="Participant Image" style="max-width:100px; max-height:100px;">
+                                            <?php else: ?>
+                                                No image
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="2">No participants found.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
                 <div style="width: 30%; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Active</h2>
