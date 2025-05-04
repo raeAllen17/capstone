@@ -9,6 +9,7 @@ if (!isset($_SESSION['id'])) {
     header('Location: landing_page.php');
     exit();
 }
+
 //SESSION MESSAGES 
 $errorMessage = "";
 $successMessage = "";
@@ -22,6 +23,14 @@ if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") 
 }
 
 if (isset($_GET['id'])) {
+    $stmt = $pdo->prepare("SELECT current_participants, participants, org_id FROM activities WHERE id = ?");
+    $stmt->execute([$_GET['id']]);
+    $activityParticipant = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $currentParticipants = $activityParticipant['current_participants'];
+    $totalParticipants = $activityParticipant['participants'];
+
+    $isDisabled = ($currentParticipants >= $totalParticipants);
 
     $activityId = intval($_GET['id']);
     $activities = getactivities($pdo, $activityId);
@@ -238,15 +247,18 @@ $qrCodeData = displayQRCodes($pdo, $org_id);
                         <h4>Required deposit amount:</h4>
                         <h2 style=" color: lightgreen;">₱<?php echo htmlspecialchars($activities['price']/2); ?></h2>
                     </div>
-                    <div style=" padding: 10px; width: 100%; display: grid; place-content: center;">
+                    <div style=" padding: 10px; width: 100%; display: grid; place-content: center; margin-bottom: 1vw;">
                         <form action="../html/includes/post_methods.php" id="proofForm" method="POST" enctype="multipart/form-data">
-                            <input type="file" accept="image/*" required name="proof-image" style=" border: 1px solid black; padding: 10px; border-radius: 20px;">
+                            <input type="file" accept="image/*" name="proof-image" style=" border: 1px solid black; padding: 10px; border-radius: 20px;" <?php echo $isDisabled ? 'disabled' : ''; ?>>
                             <input type="hidden" name="org_id" value="<?php echo htmlspecialchars($org_id); ?>">
                             <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($activityId); ?>">
                             <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($userId); ?>">
                             <button style="padding: 10px; color: white; background-color: green; border: none; border-radius: 15px;" type="submit" form="proofForm">Send</button>
-                        </form>
+                        </form>                       
                     </div>
+                    <p style=" padding: 1vw; border-top: 1px solid grey; color: #FF8B8B;">
+                        **If the image upload button is disabled, it means the slot is currently full and the organizer does not recommend paying downpayment yet. The organizer will notify you when a slot opens. CLICK SEND ANYWAY IF YOU WISH TO LINE UP**
+                    </p>
                 </div>      
             </div>
         </div>

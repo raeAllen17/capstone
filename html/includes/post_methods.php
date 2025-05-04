@@ -8,10 +8,19 @@ if (!isset($_SESSION['id'])) {
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['proof-image'])) {
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $org_id = $_POST['org_id'];
     $activity_id = $_POST['activity_id'];
     $joiner_id = $_SESSION['id'];
+
+    $stmt = $pdo->prepare("SELECT status, notified FROM participants WHERE participant_id = :participant_id AND activity_id = :activity_id");
+    $stmt->bindParam(':participant_id', $joiner_id, PDO::PARAM_INT);
+    $stmt->bindParam(':activity_id', $activity_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $participant = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $currentStatus = $participant['status'];
+    $notified = $participant['notified'];
 
     $userData = [
         'user_id' => $joiner_id,
@@ -19,14 +28,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['proof-image'])) {
         'org_id' => $org_id
     ];
 
-    $result = actRegis($pdo, $userData, $_FILES['proof-image']);
-
-    if ($result['success']) {
-        $_SESSION['success_message'] = "Your reservation is up for approval!";
+    if ($currentStatus === 'active') {
+        $_SESSION['error_message'] = "You cannot send a request because your status is active.";
+    } elseif ($currentStatus === 'pending' && $notified === 'no') {
+        $_SESSION['error_message'] = "You cannot send a request because your status is pending and not notified.";
+    } elseif ($currentStatus === 'pending' && $notified === 'cancelled') {
+        $result = actRegisUpdate($pdo, $userData, null); 
+        if ($result['success']) {
+            $_SESSION['success_message'] = "Your request has been updated successfully!";
+        } else {
+            $_SESSION['error_message'] = "Failed to update your request: " . htmlspecialchars($result['message']);
+        }
+    } elseif ($currentStatus === 'waitlist') {
+        $result = actRegisUpdate($pdo, $userData, $_FILES['proof-image']);
+        if ($result['success']) {
+            $_SESSION['success_message'] = "Your request has been updated successfully!";
+        } else {
+            $_SESSION['error_message'] = "Failed to update your request: " . htmlspecialchars($result['message']);
+        }
     } else {
-        $_SESSION['error_message'] = "Registration unsuccessful!";
-    }
+        if (isset($_FILES['proof-image']) && $_FILES['proof-image']['error'] !== UPLOAD_ERR_NO_FILE) {
+            $result = actRegis($pdo, $userData, $_FILES['proof-image']);
+        } else {
+            $result = actRegis($pdo, $userData, null);
+        }
 
+        if ($result['success']) {
+            $_SESSION['success_message'] = "Your reservation is up for approval!";
+        } else {
+            $_SESSION['error_message'] = "Registration unsuccessful!";
+        }
+    }
     header("Location: ../activityDetails.php?id=" . urlencode($activity_id));
     exit();
 } else {

@@ -24,12 +24,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         if (isset($_POST['participant_id'])) {
             $participantId = $_POST['participant_id'];
             $activityId = $_POST['activity_id'];
-            echo $participantId;
-            echo $activityId;
             updateNotified($pdo, $participantId, $activityId);
+            header("Location: " . $_SERVER['PHP_SELF']);
+            exit();
         }
     } else if (isset($_POST['cross'])){
-
+        if (isset($_POST['participant_id'])) {
+            $participantId = $_POST['participant_id'];
+            $activityId = $_POST['activity_id'];
+            rejectRequest($pdo, $participantId, $activityId);
+        }
     }
 }
 
@@ -40,6 +44,7 @@ if (!$activities) {
     $activities = [];
 }
 $participants = getParticipantRequest($pdo, $userId, $activityId);
+$waitlists = getWaitlistRequest($pdo, $userId, $activityId);
 ?>
 
 <!DOCTYPE html>
@@ -100,6 +105,19 @@ $participants = getParticipantRequest($pdo, $userId, $activityId);
         .div-space{
             margin-top: 1vw;
         }
+        ::-webkit-scrollbar {
+            width: 10px; 
+            appearance: none;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+            margin: 20px 0; 
+        }
+        ::-webkit-scrollbar-thumb {
+            height: 10px;
+            background-color: rgba(0, 0, 0, 0.5); 
+            border-radius: 20px;
+        }
     </style>
 </head>
 <body style="background-color: white; height: 100vh; width: 100%;">
@@ -107,7 +125,7 @@ $participants = getParticipantRequest($pdo, $userId, $activityId);
         <div class="nav_left">
             <ul class="navbar">
                 <li><input type="button" class="logo"></li>
-                <li style=" border-bottom: 2px solid green;"><a href="">Home</a></li>
+                <li style=" border-bottom: 2px solid green;"><a href="org_homePage.php">Home</a></li>
                 <li><a href="org_createAct.php">Activity</a></li>
                 <li><a href="org_forumPage.php">Forum</a></li>
                 <li><a href="org_marketplace.php">Marketplace</a></li>
@@ -205,21 +223,15 @@ $participants = getParticipantRequest($pdo, $userId, $activityId);
                     <?php endif; ?>
                     </div>
                 </div>
-            <div id="pop-up" style=" height: auto; width: 100%; display: flex; flex-wrap:wrap;justify-content: space-evenly; align-items: center;">
-                <div style="width: 30%; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
+            <div id="pop-up" style=" height: auto; width: 100%; display: flex; flex-wrap:wrap; justify-content: space-evenly; align-items: center; gap: 1vw;">
+                <div style="width: 600px; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D; overflow: auto;">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Requests</h2>
                     <table>
-                        <thead>
-                            <tr>
-                                <th>Participant Name</th>
-                                <th>Image</th>
-                            </tr>
-                        </thead>
                         <tbody>
                             <?php if ($participants && count($participants) > 0): ?>
                                 <?php foreach ($participants as $participant): ?>
                                     <tr>
-                                        <td><?php echo htmlspecialchars($participant['firstName'] . ' ' . $participant['lastName']); ?></td>
+                                        <td style="text-align: left;"><?php echo htmlspecialchars($participant['firstName'] . ' ' . $participant['lastName']); ?></td>
                                         <td>
                                             <?php if (!empty($participant['image'])): ?>
                                                 <?php
@@ -249,12 +261,38 @@ $participants = getParticipantRequest($pdo, $userId, $activityId);
                         </tbody>
                     </table>
                 </div>
-                <div style="width: 30%; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
+                <div style="width: 600px; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Active</h2>
                     
                 </div>
-                <div style="width: 30%; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
+                <div style="width: 600px; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Refunds</h2>
+                </div>
+                <div style="width: 600px; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
+                    <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Waitlist</h2>
+                    <table>
+                        <tbody>
+                            <?php if ($waitlists && count($waitlists) > 0): ?>
+                                <?php foreach ($waitlists as $waitlist): ?>
+                                    <tr>
+                                        <td style="text-align: left;"><?php echo htmlspecialchars($waitlist['firstName'] . ' ' . $waitlist['lastName']); ?></td>
+                                        <td>
+                                            <form action="" method="POST" enctype="multipart/form-data">
+                                                <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($waitlist['participant_id']); ?>">
+                                                <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($activityId); ?>">
+                                                <button class="button-buttons" name="notify" style="background: url('../imgs/icon_cross.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button>
+                                                <button class="button-buttons" name="remove" style="background: url('../imgs/icon_check.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> 
+                                            </form>       
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="2">No participants found.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

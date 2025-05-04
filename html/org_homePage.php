@@ -20,7 +20,6 @@ if (isset($_SESSION['id'])) {
 
 //fetching functions 
 $data = displayOrgActivities($pdo, $userId);
-$participants = getParticipantRequest($pdo, $userId, $activityId);
 ?>
 
 <!DOCTYPE html>
