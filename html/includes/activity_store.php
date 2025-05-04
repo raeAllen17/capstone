@@ -1,5 +1,7 @@
 <?php
-
+require '../vendor/autoload.php';
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 function createActivity($pdo, $userData, $userId){
     $result = [
         'success' => false,
@@ -388,4 +390,52 @@ function actRegisUpdate($pdo, $userData, $file) {
     }
 
     return $result;
+}
+
+function notifyParticipant($pdo, $participantId, $activityId) {
+    $stmt = $pdo->prepare("SELECT email FROM account_joiner WHERE id = :participant_id");
+    $stmt->bindParam(':participant_id', $participantId, PDO::PARAM_INT);
+    $stmt->execute();
+
+    if ($stmt->rowCount() > 0) {
+        $participant = $stmt->fetch(PDO::FETCH_ASSOC);
+        $email = $participant['email'];
+
+        // Prepare the email
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com'; 
+            $mail->SMTPAuth = true; 
+            $mail->Username = 'allenretuta10@gmail.com'; 
+            $mail->Password = 'uzwk gggt nbff pdlj';
+            $mail->SMTPSecure = 'tls'; 
+            $mail->Port = 587; 
+
+            $mail->setFrom('allenretuta10@gmail.com', 'JOYn');
+            $mail->addAddress($email);
+            $mail->isHTML(true); 
+
+            $mail->Subject = "Registration Notification";
+            $mail->Body    = "Hello,<br><br>You can now try to register again for the activity. We look forward to your participation!<br><br>Best regards,<br>JOYn Team";
+            $mail->AltBody = "Hello, You can now try to register again for the activity. We look forward to your participation! Best regards, JOYn Team";
+
+            $mail->send();
+
+            return [
+                'success' => true,
+                'message' => "Notification email has been sent to $email."
+            ];
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'message' => "Email could not be sent. Mailer Error: {$mail->ErrorInfo}"
+            ];
+        }
+    } else {
+        return [
+            'success' => false,
+            'message' => "Participant not found."
+        ];
+    }
 }

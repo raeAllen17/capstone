@@ -34,15 +34,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
             $activityId = $_POST['activity_id'];
             rejectRequest($pdo, $participantId, $activityId);
         }
+    } else if (isset($_POST['notify'])){
+        if (isset($_POST['participant_id'])) {
+            $participantId = $_POST['participant_id'];
+            $activityId = $_POST['activity_id'];
+            
+            // Call the notifyParticipant function
+            $result = notifyParticipant($pdo, $participantId, $activityId);
+            
+            if ($result['success']) {
+                echo "nangyari na";
+            } else {
+                echo "di nag email";
+            }
+        }
     }
 }
-
 
 //fetching functions 
 $activities = getactivities($pdo, $activityId);
 if (!$activities) {
     $activities = [];
 }
+
 $participants = getParticipantRequest($pdo, $userId, $activityId);
 $waitlists = getWaitlistRequest($pdo, $userId, $activityId);
 ?>
@@ -280,8 +294,8 @@ $waitlists = getWaitlistRequest($pdo, $userId, $activityId);
                                             <form action="" method="POST" enctype="multipart/form-data">
                                                 <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($waitlist['participant_id']); ?>">
                                                 <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($activityId); ?>">
-                                                <button class="button-buttons" name="notify" style="background: url('../imgs/icon_cross.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button>
-                                                <button class="button-buttons" name="remove" style="background: url('../imgs/icon_check.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> 
+                                                <button class="button-buttons" name="remove" style="background: url('../imgs/icon_cross.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button>
+                                                <button class="button-buttons" name="notify" style="background: url('../imgs/icon_check.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> 
                                             </form>       
                                         </td>
                                     </tr>
