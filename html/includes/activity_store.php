@@ -169,7 +169,7 @@ function displayQRCodes($pdo, $userId) {
     return $result;
 }
 
-function actRegis($pdo, $userData, $file) {
+function actRegis($pdo, $userData, $pickup_location, $file) {
     $result = [
         'success' => false,
         'message' => '',
@@ -201,11 +201,16 @@ function actRegis($pdo, $userData, $file) {
 
         try {
             // Prepare the SQL statement
-            $stmt = $pdo->prepare("INSERT INTO participants (org_id, activity_id, participant_id, image, status) VALUES (:org_id, :activity_id, :participant_id, :image, :status)");
+            $stmt = $pdo->prepare("INSERT INTO participants 
+                (org_id, activity_id, pickup_location, participant_id, image, status) 
+                VALUES 
+                (:org_id, :activity_id, :pickup_location, :participant_id, :image, :status)");
+
             $stmt->bindParam(':org_id', $orgId, PDO::PARAM_INT);
             $stmt->bindParam(':activity_id', $activityId, PDO::PARAM_INT);
+            $stmt->bindParam(':pickup_location', $pickup_location, PDO::PARAM_STR); // ✅ should be string
             $stmt->bindParam(':participant_id', $joinerId, PDO::PARAM_INT);
-            $stmt->bindParam(':image', $imageData, PDO::PARAM_LOB); // This will be NULL if no image is uploaded
+            $stmt->bindParam(':image', $imageData, PDO::PARAM_LOB);
             $stmt->bindParam(':status', $status, PDO::PARAM_STR);
 
             // Begin transaction
@@ -231,7 +236,7 @@ function getParticipantRequest($pdo, $orgId, $activityId) {
         SELECT p.id, p.participant_id, j.firstName, j.lastName, p.image 
         FROM participants p
         JOIN account_joiner j ON p.participant_id = j.id 
-        WHERE p.org_id = ? AND p.activity_id = ? AND p.notified = 'no' AND p.status = 'pending'
+        WHERE p.org_id = ? AND p.activity_id = ? AND p.notified = 'no' AND p.status = 'pending' AND p.refund = 'no'
     ");
     $stmt->execute([$orgId, $activityId]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -323,7 +328,7 @@ function getActiveParticipants ($pdo, $orgId, $activityId) {
         SELECT p.id, p.participant_id, j.firstName, j.lastName, p.image 
         FROM participants p
         JOIN account_joiner j ON p.participant_id = j.id 
-        WHERE p.org_id = ? AND p.activity_id = ? AND p.status = 'active'
+        WHERE p.org_id = ? AND p.activity_id = ? AND p.status = 'active' AND p.refund = 'no'
     ");
     $stmt->execute([$orgId, $activityId]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -335,7 +340,7 @@ function getWaitlistRequest($pdo, $userId, $activityId){
         FROM participants p
         JOIN account_joiner j ON p.participant_id = j.id 
         JOIN activities a ON p.activity_id = a.id 
-        WHERE p.org_id = ? AND p.activity_id = ? AND p.notified = 'no' AND p.status = 'waitlist'
+        WHERE p.org_id = ? AND p.activity_id = ? AND p.notified = 'no' AND p.status = 'waitlist' AND p.refund = 'no'
     ");
     $stmt->execute([$userId, $activityId]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -586,6 +591,73 @@ function getForumEntriesByActivityId($pdo, $activityId) {
     return $result;
 }
 
+function getCurrentActivities($pdo, $userId) {
+    $result = [
+        'success' => false,
+        'data' => []
+    ];
+    
+    $stmt = $pdo->prepare("
+        SELECT activities.id, activities.activity_name
+        FROM participants
+        JOIN activities ON participants.activity_id = activities.id
+        WHERE participants.status = 'active' AND participants.participant_id = ?
+    ");
+    $stmt->execute([$userId]);
+    $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if ($activities) {
+        $result['success'] = true;
+        $result['data'] = $activities;
+    }
+    
+    return $result;
+}
+
+function setRefundYes($pdo, $userId, $activityId) {
+    $result = [
+        'success' => false,
+        'message' => ''
+    ];
+
+    $stmt = $pdo->prepare("SELECT refund FROM participants WHERE participant_id = ? AND activity_id = ?");
+    $stmt->execute([$userId, $activityId]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($row['refund'] === 'yes') {
+        $result['message'] = 'Refund has already been submitted.';
+        return $result;
+    }
+
+    $stmt = $pdo->prepare("UPDATE participants SET refund = 'yes' WHERE participant_id = ? AND activity_id = ?");
+    $stmt->execute([$userId, $activityId]);
+
+    $result['success'] = true;
+    $result['message'] = 'Refund successfully updated to yes.';
+
+    return $result;
+}
+
+function getRefundRequest($pdo, $orgId, $activityId) {
+    $stmt = $pdo->prepare("
+        SELECT p.id, p.participant_id, j.firstName, j.lastName, p.image 
+        FROM participants p
+        JOIN account_joiner j ON p.participant_id = j.id 
+        WHERE p.org_id = ? AND p.activity_id = ? AND p.notified = 'yes' AND p.status = 'active' AND p.refund = 'yes'
+    ");
+    $stmt->execute([$orgId, $activityId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function updateRefundRequest($pdo, $participantId, $activityId){
+    $stmt1 = $pdo->prepare("UPDATE participants SET notified = 'cancel', image = null, refund = 'done' WHERE participant_id = ? AND activity_id = ?");
+    $stmt1->execute([$participantId, $activityId]);
+
+    $stmt2 = $pdo->prepare("UPDATE activities SET current_participants = current_participants - 1 WHERE id = ? AND current_participants > 0");
+    $stmt2->execute([$activityId]);
+
+    return true;
+}
 
 
 

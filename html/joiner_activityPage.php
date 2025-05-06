@@ -8,10 +8,12 @@ if(isset($_SESSION['id'])){
     $userId = $_SESSION['id']; 
     $userData = getJoinerUserdata($pdo, $userId);
     $joinerName = $userData['firstName'];
-
 } else {
-    
+    header("location: landing_page.php");
+    exit();
 }
+
+$currentActivities = getCurrentActivities($pdo, $userId);
 
 $ActiveActivities = getActiveActivites($pdo, $userId);
 $allActivityDetails = []; 
@@ -25,6 +27,17 @@ if (!empty($ActiveActivities)) {
     }
 }
 
+$errorMessage = "";
+$successMessage = "";
+if (isset($_SESSION['error_message']) && $_SESSION['error_message'] !== "") {
+    $errorMessage = $_SESSION['error_message'];
+    unset($_SESSION['error_message']); 
+}
+if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") {
+    $successMessage = $_SESSION['success_message'];
+    unset($_SESSION['success_message']); 
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST"){
     if (isset($_POST['rate'])){
         $orgId = $_POST['org_id'];
@@ -34,6 +47,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $rating = $_POST['rating'];
 
         rateActivity($pdo, $userId, $orgId, $activityId, $message, $rating, $participantName);
+    } else if (isset($_POST['refund'])){
+        $activityId = $_POST['activityId'];
+        $result = setRefundYes($pdo, $userId, $activityId);
+        $_SESSION['error_message'] = $result['message'];
+        header("Location: " . $_SERVER['PHP_SELF']);
+        exit();
     }
 }
 
@@ -65,6 +84,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     </style>
 </head>
 <body>
+    <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
+    <span id="successMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: green; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $successMessage; ?></span>   
+
     <nav id="nav">
             <div class="nav_left">
                 <ul class = "navbar">
@@ -101,6 +123,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         <?php endforeach; ?>
                     <?php else: ?>
                         <p><?php echo "No past activities found."; ?></p>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <br>
+            <div style="height: auto; width: 60%;">
+                <h1>Current Activities</h1>
+                <div style="height: auto; width: 100%; border: 2px solid black; border-radius: 10px; padding: 1vw;">
+                    <?php if ($currentActivities['success']): ?>
+                        <?php foreach ($currentActivities['data'] as $activity): ?>
+                            <form action="" method="POST">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin: 0.8vw 0vw; border-bottom:1px solid black; padding: 1vw 0;">
+                                    <?php echo htmlspecialchars($activity['activity_name']); ?>
+                                    <input type="hidden" name="activityId" value="<?php echo htmlspecialchars($activity['id']); ?>">
+                                    <button class="button-buttons" name="refund">Refund</button>
+                                </div>
+                            </form>     
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p>No current activities available.</p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -145,6 +186,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
             const popup = document.getElementById(modalId);
             popup.style.display = "flex";
         }
+
+        document.addEventListener("DOMContentLoaded", function() {
+        var errorMsg = document.getElementById("errorMessage");
+        var successMsg = document.getElementById("successMessage");
+
+        if (errorMsg.innerHTML.trim() !== "") {
+            errorMsg.style.display = "flex";
+            setTimeout(() => {
+            errorMsg.style.display = "none";
+            errorMsg.innerHTML = "";
+        }, 2000);
+        }
+
+        if (successMsg.innerHTML.trim() !== "") {
+            successMsg.style.display = "flex";
+            setTimeout(() => {
+            successMsg.style.display = "none";
+            successMsg.innerHTML = ""; 
+        }, 2000);
+        }
+        });
 
     </script>
 

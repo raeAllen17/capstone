@@ -23,6 +23,7 @@ if (isset($_SESSION['id'])) {
 $participants = getParticipantRequest($pdo, $userId, $activityId);
 $waitlists = getWaitlistRequest($pdo, $userId, $activityId);
 $actives = getActiveParticipants($pdo, $userId, $activityId);
+$refunds = getRefundRequest($pdo, $userId, $activityId);
 $activities = getactivities($pdo, $activityId);
 $activityName = $activities['activity_name'];
 
@@ -105,6 +106,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $activityId = $_GET['id'];
         updateActivityStatus($pdo, $activityId);
         header("location: org_homePage.php");
+        exit();
+    } else if (isset($_POST['accept-refund'])){
+        $activityId = $_GET['id'];
+        $participantId = $_POST['participant_id'];
+        updateRefundRequest($pdo, $participantId, $activityId);
+        header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
         exit();
     }
 }
@@ -358,6 +365,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                 </div>
                 <div style="width: 600px; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D; overflow: auto;">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Refunds</h2>
+                    <table>
+                        <tbody>
+                            <?php if ($refunds && count($refunds) > 0): ?>
+                                <?php foreach ($refunds as $refund): ?>
+                                    <tr>
+                                        <td style="text-align: left;"><?php echo htmlspecialchars($refund['firstName'] . ' ' . $refund['lastName']); ?></td>
+                                        <td>
+                                            <form action="" method="POST" enctype="multipart/form-data">
+                                                <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($refund['participant_id']); ?>">
+                                                <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($activityId); ?>">
+                                                <button class="button-buttons" name="" style="background: url('../imgs/icon_cross.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button>
+                                                <button class="button-buttons" name="accept-refund" style="background: url('../imgs/icon_check.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> 
+                                            </form>       
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="2">No participants found.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
                 </div>
                 <div style="width: 600px; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D; overflow: auto;">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Waitlist</h2>

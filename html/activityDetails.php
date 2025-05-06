@@ -249,11 +249,30 @@ $qrCodeData = displayQRCodes($pdo, $org_id);
                     </div>
                     <div style=" padding: 10px; width: 100%; display: grid; place-content: center; margin-bottom: 1vw;">
                         <form action="../html/includes/post_methods.php" id="proofForm" method="POST" enctype="multipart/form-data">
-                            <input type="file" accept="image/*" name="proof-image" style=" border: 1px solid black; padding: 10px; border-radius: 20px;" <?php echo $isDisabled ? 'disabled' : ''; ?>>
+                            <div style=" margin-bottom: 1vw;">
+                                <?php
+                                    $pickupArray = explode(',', $activities['pickup_locations']);
+                                    ?>
+                                    <?php if (!empty($pickupArray)): ?>
+                                        <label for="pickup_location" style="margin-top: 10px; display: block;">Select Pickup Location:</label>
+                                        <select name="pickup_location" id="pickup_location" 
+                                                style="padding: 10px; border-radius: 10px; margin-top: 5px; width: 100%;" 
+                                                <?php echo $isDisabled ? 'disabled' : ''; ?>>
+                                            <?php foreach ($pickupArray as $location): ?>
+                                                <option value="<?php echo trim($location); ?>"><?php echo ucfirst(trim($location)); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                <?php endif; ?>
+                            </div>
+                            <div style=" margin-bottom: 1vw;">
+                                <input type="file" accept="image/*" name="proof-image" style=" border: 1px solid black; padding: 10px; border-radius: 10px;" <?php echo $isDisabled ? 'disabled' : ''; ?>>
+                            </div> 
+                            <div style=" width: 100%; display: flex; justify-content: flex-end;">
+                                <button style="padding: 10px; color: white; background-color: green; border: none; border-radius: 15px;" type="submit" form="proofForm">Send</button>
+                            </div>
                             <input type="hidden" name="org_id" value="<?php echo htmlspecialchars($org_id); ?>">
                             <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($activityId); ?>">
                             <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($userId); ?>">
-                            <button style="padding: 10px; color: white; background-color: green; border: none; border-radius: 15px;" type="submit" form="proofForm">Send</button>
                         </form>                       
                     </div>
                     <p style=" padding: 1vw; border-top: 1px solid grey; color: #FF8B8B;">

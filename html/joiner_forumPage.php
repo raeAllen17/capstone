@@ -9,7 +9,8 @@ if(isset($_SESSION['id'])){
     $userData = getJoinerUserdata($pdo, $userId);
     $joinerName = $userData['firstName'];
 } else {
-    
+    header("location: landing_page.php");
+    exit();
 }
 
 $data = displayRating($pdo);

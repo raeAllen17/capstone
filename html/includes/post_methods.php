@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $org_id = $_POST['org_id'];
     $activity_id = $_POST['activity_id'];
     $joiner_id = $_SESSION['id'];
+    $pickup_location = isset($_POST['pickup_location']) ? trim($_POST['pickup_location']) : null;
 
     $stmt = $pdo->prepare("SELECT status, notified FROM participants WHERE participant_id = :participant_id AND activity_id = :activity_id");
     $stmt->bindParam(':participant_id', $joiner_id, PDO::PARAM_INT);
@@ -26,7 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $userData = [
         'user_id' => $joiner_id,
         'activity_id' => $activity_id,
-        'org_id' => $org_id
+        'org_id' => $org_id,
+        'pickup_location' => $pickup_location 
     ];
 
     if ($currentStatus === 'active') {
@@ -49,9 +51,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     } else {
         if (isset($_FILES['proof-image']) && $_FILES['proof-image']['error'] !== UPLOAD_ERR_NO_FILE) {
-            $result = actRegis($pdo, $userData, $_FILES['proof-image']);
+            $result = actRegis($pdo, $userData, $pickup_location, $_FILES['proof-image']);
         } else {
-            $result = actRegis($pdo, $userData, null);
+            $result = actRegis($pdo, $userData, $pickup_location,null);
         }
 
         if ($result['success']) {
