@@ -7,6 +7,7 @@ require_once 'includes/activity_store.php';
 if (isset($_GET['id'])){
     $activityId = $_GET['id'];
 }
+
 if (isset($_SESSION['id'])) {
     $userId = $_SESSION['id']; 
     $userData = getUserdata($pdo, $userId);
@@ -18,6 +19,13 @@ if (isset($_SESSION['id'])) {
     exit;
 }
 
+//fetching data functions
+$participants = getParticipantRequest($pdo, $userId, $activityId);
+$waitlists = getWaitlistRequest($pdo, $userId, $activityId);
+$actives = getActiveParticipants($pdo, $userId, $activityId);
+$activities = getactivities($pdo, $activityId);
+$activityName = $activities['activity_name'];
+
 //updating notified status
 if ($_SERVER["REQUEST_METHOD"] == "POST"){
     if (isset($_POST['check']) && isset($_POST['participant_id']) && isset($_POST['activity_id'])) {
@@ -25,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
             $participantId = $_POST['participant_id'];
             $activityId = $_POST['activity_id'];
             updateNotified($pdo, $participantId, $activityId);
-            header("Location: " . $_SERVER['PHP_SELF']);
+            header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
             exit();
         }
     } else if (isset($_POST['cross'])){
@@ -48,17 +56,58 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                 echo "di nag email";
             }
         }
+    } else if (isset($_POST['notify_date_all'])) {
+        if (isset($actives) && is_array($actives)) {
+            foreach ($actives as $active) {
+                $participantId = $active['participant_id'];
+                $result = getParticipantEmail($pdo, $participantId); 
+    
+                if ($result && isset($result['email'], $result['firstName'], $result['lastName'])) {
+                    $email = $result['email'];
+                    $firstName = $result['firstName'];
+                    $lastName = $result['lastName'];
+    
+                    $subject = "Your activity $activityName happening soon!";
+                    $message = "Dear $firstName $lastName,<br><br>We would like to inform you about your participation in the activity <strong>$activityName</strong>.<br><br>Best regards,<br>JOYn";
+    
+                    if ($email) {
+                        sendActivityReminderEmail($email, $subject, $message);
+                        header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
+                    }
+                } else {
+                    echo "Could not retrieve email for participant ID: $participantId.";
+                }
+            }
+        } else {
+            echo "No active participants found.";
+        }
+    } else if (isset($_POST['notify_date'])){
+        if (isset($_POST['participant_id'])){
+            $participantId = $_POST['participant_id'];
+            $result = getParticipantEmail($pdo, $participantId);
+            if ($result && isset($result['email'], $result['firstName'], $result['lastName'])) {
+                $email = $result['email'];
+                $firstName = $result['firstName'];
+                $lastName = $result['lastName'];
+    
+                $subject = "Your activity $activityName happening soon!";
+                $message = "Dear $firstName $lastName,<br><br>We would like to inform you about your participation in the activity <strong>$activityName</strong>.<br><br>Best regards,<br>JOYn";
+    
+                if ($email) {
+                    sendActivityReminderEmail($email, $subject, $message);
+                    header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
+                }
+            } else {
+                echo "Could not retrieve email for participant ID: $participantId.";
+            }
+        }     
+    } else if (isset($_POST['update_activityStatus'])){
+        $activityId = $_GET['id'];
+        updateActivityStatus($pdo, $activityId);
+        header("location: org_homePage.php");
+        exit();
     }
 }
-
-//fetching functions 
-$activities = getactivities($pdo, $activityId);
-if (!$activities) {
-    $activities = [];
-}
-
-$participants = getParticipantRequest($pdo, $userId, $activityId);
-$waitlists = getWaitlistRequest($pdo, $userId, $activityId);
 ?>
 
 <!DOCTYPE html>
@@ -159,7 +208,10 @@ $waitlists = getWaitlistRequest($pdo, $userId, $activityId);
                 <p><strong>Go to actvity page -></strong> <a href="org_createAct.php" class="link-button">Create Activity</a></p>
             </div>
 
-            <div style="width: 70%; height: auto; box-shadow: 1px 2px 6px 0.1px; padding: 2vw; border-radius: 20px; display: flex; flex-direction: column; gap: 1vw; background-color: #A9BA9D;">
+            <div style="position: relative;width: 70%; height: auto; box-shadow: 1px 2px 6px 0.1px; padding: 2vw; border-radius: 20px; display: flex; flex-direction: column; gap: 1vw; background-color: #A9BA9D;">
+                <form action="" method="POST" style="position: absolute; top: 2vw; right: 3vw;">
+                    <button class="button-buttons" name="update_activityStatus" style=" background-color: #2828FA;">Done</button> 
+                </form>
                 <h1 style=" color: azure;">Manage your activity!</h1>
                 <div style="width: 100%; height:100%; border: 2px solid black; border-radius: 10px; padding: 2vw; background-color: azure;">          
                     <?php if(!empty($activities)): ?>  
@@ -275,14 +327,39 @@ $waitlists = getWaitlistRequest($pdo, $userId, $activityId);
                         </tbody>
                     </table>
                 </div>
-                <div style="width: 600px; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
+                <div style="width: 600px; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D; position: relative; overflow: auto;">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Active</h2>
-                    
+                    <form action="" method="POST" style="position: absolute; top: 1.5vw; right: 2vw;">
+                            <button class="button-buttons" name="notify_date_all" style="">notify</button> 
+                    </form> 
+                    <table>                       
+                        <tbody>
+                            <?php if ($actives && count($actives) > 0): ?>
+                                <?php foreach ($actives as $active): ?>
+                                    <tr>
+                                        <td style="text-align: left;"><?php echo htmlspecialchars($active['firstName'] . ' ' . $active['lastName']); ?></td>
+                                        <td>
+                                            <form action="" method="POST" enctype="multipart/form-data">
+                                                <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($active['participant_id']); ?>">
+                                                <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($activityId); ?>">
+                                                <button class="button-buttons" name="remove" style="background: url('../imgs/icon_cross.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button>
+                                                <button class="button-buttons" name="notify_date" style="background: url('../imgs/icon_check.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> 
+                                            </form>                                            
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="2">No participants found.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>            
                 </div>
-                <div style="width: 600px; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
+                <div style="width: 600px; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D; overflow: auto;">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Refunds</h2>
                 </div>
-                <div style="width: 600px; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D;">
+                <div style="width: 600px; height: 20vw; background-color: gainsboro; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D; overflow: auto;">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Waitlist</h2>
                     <table>
                         <tbody>
@@ -292,8 +369,6 @@ $waitlists = getWaitlistRequest($pdo, $userId, $activityId);
                                         <td style="text-align: left;"><?php echo htmlspecialchars($waitlist['firstName'] . ' ' . $waitlist['lastName']); ?></td>
                                         <td>
                                             <form action="" method="POST" enctype="multipart/form-data">
-                                                <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($waitlist['participant_id']); ?>">
-                                                <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($activityId); ?>">
                                                 <button class="button-buttons" name="remove" style="background: url('../imgs/icon_cross.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button>
                                                 <button class="button-buttons" name="notify" style="background: url('../imgs/icon_check.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> 
                                             </form>       

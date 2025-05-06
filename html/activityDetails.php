@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once 'includes/dbCon.php';
-require 'includes/activity_store.php';
+require_once 'includes/activity_store.php';
 
 $joiner_id = $_SESSION['id'];
 
@@ -141,10 +141,10 @@ $qrCodeData = displayQRCodes($pdo, $org_id);
                 <ul class = "navbar">
                     <li><input type="button" class="logo"></li>
                     <li style=" border-bottom: 2px solid green;"><a href="" >Home</a></li>
-                    <li><a href="" >Activity</a></li>
-                    <li><a href="" >Forum</a></li>
-                    <li><a href="" >Marketplace</a></li>
-                    <li><a href="" >Notification</a></li>
+                    <li><a href="joiner_activityPage.php" >Activity</a></li>
+                    <li><a href="joiner_forumPage.php" >Forum</a></li>
+                    <li><a href="joiner_marketplace.php" >Marketplace</a></li>
+                    <li><a href="joiner_notification.php" >Notification</a></li>
                 </ul>
             </div>
             <div class="nav_right">                 

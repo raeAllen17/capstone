@@ -14,6 +14,8 @@ if (isset($_SESSION['id'])) {
     exit;
 }
 
+echo $userId;
+
 ?>
 
 <!DOCTYPE html>
@@ -26,7 +28,7 @@ if (isset($_SESSION['id'])) {
 
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
 </head>
-<body>
+<body style=" height: 100vh;">
     <nav id="nav" style="background-color: white;">
         <div class="nav_left">
             <ul class="navbar">
@@ -44,6 +46,10 @@ if (isset($_SESSION['id'])) {
         </div>         
     </nav>
 
-    <h1 style="padding: 500px;">forum PAGe</h1>
+    <div class="container" stlye=" height: 100%; width: 100%;">
+        <div class="container-wrap" style=" padding-top: 7vh; height: 100%; width: 100%; background-color: red;">
+
+        </div>
+    </div>
 </body>
 </html>

@@ -1,7 +1,8 @@
 <?php
 session_start();
-require_once 'dbCon.php';
-require_once 'activity_store.php';
+require 'dbCon.php';
+require 'activity_store.php';
+
 
 if (!isset($_SESSION['id'])) {
     header('Location: ../activityDetails.php');
@@ -29,11 +30,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     ];
 
     if ($currentStatus === 'active') {
-        $_SESSION['error_message'] = "You cannot send a request because your status is active.";
+        $_SESSION['error_message'] = "You already joined this activity.";
     } elseif ($currentStatus === 'pending' && $notified === 'no') {
-        $_SESSION['error_message'] = "You cannot send a request because your status is pending and not notified.";
-    } elseif ($currentStatus === 'pending' && $notified === 'cancelled') {
-        $result = actRegisUpdate($pdo, $userData, null); 
+        $_SESSION['error_message'] = "Registration already pending, please wait for confirmation notification.";
+    } elseif ($currentStatus === 'pending' && $notified === 'cancel') {
+        $result = actRegisUpdate($pdo, $userData, $_FILES['proof-image']); 
         if ($result['success']) {
             $_SESSION['success_message'] = "Your request has been updated successfully!";
         } else {
@@ -66,4 +67,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     header("Location: ../activityDetails.php");
     exit();
 }
-?>

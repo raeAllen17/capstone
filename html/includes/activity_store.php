@@ -1,12 +1,12 @@
 <?php
-require '../vendor/autoload.php';
+require __DIR__ . '/../../vendor/autoload.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 function createActivity($pdo, $userData, $userId){
     $result = [
         'success' => false,
         'failed_message' => '',
-        'success_message' => '',
+        'success_message' => '',    
     ];
 
     $org_id = $userId;
@@ -64,7 +64,7 @@ function displayActivity($pdo){
     ];
 
     try {
-        $query = "SELECT * FROM activities";
+        $query = "SELECT * FROM activities WHERE status = 'pending'";
         $stmt = $pdo->prepare($query);
         $stmt->execute();
         $result['data'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -247,7 +247,7 @@ function displayOrgActivities($pdo, $orgId) {
     ];
 
     try {
-        $query = "SELECT * FROM activities WHERE org_id = ?";
+        $query = "SELECT * FROM activities WHERE org_id = ? AND status = 'pending'";
         $stmt = $pdo->prepare($query);
         $stmt->execute([$orgId]);
         $result['data'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -318,6 +318,17 @@ function updateParticipantNumber($pdo, $activityId){
     $stmt->execute([$activityId]);
 }
 
+function getActiveParticipants ($pdo, $orgId, $activityId) {
+    $stmt = $pdo->prepare("
+        SELECT p.id, p.participant_id, j.firstName, j.lastName, p.image 
+        FROM participants p
+        JOIN account_joiner j ON p.participant_id = j.id 
+        WHERE p.org_id = ? AND p.activity_id = ? AND p.status = 'active'
+    ");
+    $stmt->execute([$orgId, $activityId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 function getWaitlistRequest($pdo, $userId, $activityId){
     $stmt = $pdo->prepare("
         SELECT p.id, p.participant_id, j.firstName, j.lastName, a.id, a.activity_name as activity_name
@@ -360,7 +371,8 @@ function actRegisUpdate($pdo, $userData, $file) {
         $stmt = $pdo->prepare("
             UPDATE participants 
             SET image = :image, 
-                status = 'pending' 
+                status = 'pending',
+                notified = 'no'
             WHERE participant_id = :participant_id AND activity_id = :activity_id
         ");
 
@@ -439,3 +451,141 @@ function notifyParticipant($pdo, $participantId, $activityId) {
         ];
     }
 }
+
+function getParticipantEmail($pdo, $participantId) {
+    $stmt = $pdo->prepare("SELECT firstName, lastName, email FROM account_joiner WHERE id = ?");
+    $stmt->execute([$participantId]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+function sendActivityReminderEmail($email, $subject, $message) {
+    $mail = new PHPMailer(true); 
+    try {
+        $mail->isSMTP();                                    
+        $mail->Host = 'smtp.gmail.com';                        
+        $mail->SMTPAuth = true;                                   
+        $mail->Username = 'allenretuta10@gmail.com';            
+        $mail->Password = 'uzwk gggt nbff pdlj';               
+        $mail->SMTPSecure = 'tls';                              
+        $mail->Port = 587;                                        
+
+        // Recipients
+        $mail->setFrom('allenretuta10@gmail.com', 'JOYn');       
+        $mail->addAddress($email);                                
+
+        // Content
+        $mail->isHTML(true);                                     
+        $mail->Subject = $subject;                               
+        $mail->Body    = $message;                               
+        $mail->AltBody = strip_tags($message);           
+
+        $mail->send();                                          
+        return [
+            'success' => true,
+            'message' => "Notification email has been sent to $email."
+        ];
+    } catch (Exception $e) {
+        return [
+            'success' => false,
+            'message' => "Email could not be sent. Mailer Error: {$mail->ErrorInfo}"
+        ];
+    }
+}
+
+function updateActivityStatus ($pdo, $activityId){
+    $stmt = $pdo->prepare("UPDATE activities SET status = 'done' WHERE id = ?");
+    return $stmt->execute([$activityId]);
+}
+
+function getActiveActivites($pdo, $participantId) {
+    $stmt = $pdo->prepare("SELECT activity_id FROM participants WHERE participant_id = ? AND status = 'active'");
+    $stmt->execute([$participantId]);
+    return $stmt->fetchAll(PDO::FETCH_COLUMN);
+}
+
+function getActivityDetails($pdo, $activityId) {
+    $result = [
+        'success' => false,
+        'failed_message' => '',
+        'success_message' => '',
+        'data' => []
+    ];
+
+    $stmt = $pdo->prepare("SELECT id, activity_name, date, org_id FROM activities WHERE id = ? AND status = 'done'");
+    $stmt->execute([$activityId]);
+    $activity = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($activity) {
+        $result['success'] = true;
+        $result['success_message'] = 'Activity details retrieved successfully.';
+        $result['data'] = [$activity];
+    } else {
+        $result['failed_message'] = 'No activity found or status is not "done".';
+    }
+
+    return $result;
+}
+
+function rateActivity($pdo, $participantId, $orgId, $activityId, $message, $rating, $participantName) {
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM forum WHERE activity_id = ? AND participant_id = ?");
+    $stmt->execute([$activityId, $participantId]);
+    $count = $stmt->fetchColumn();
+
+    if ($count > 0) {
+        return "You have already submitted a comment for this activity.";
+    } else {
+        $stmt = $pdo->prepare("INSERT INTO forum (org_id, activity_id, participant_id, message, rating, participant_name) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$orgId, $activityId, $participantId, $message, $rating, $participantName]);
+        return "Your comment has been submitted successfully.";
+    }
+}
+
+function displayRating($pdo) {
+    $result = [
+        'success' => false,
+        'data' => []
+    ];
+
+    $stmt = $pdo->prepare("
+        SELECT activities.*, account_org.orgname
+        FROM activities
+        LEFT JOIN account_org ON activities.org_id = account_org.id
+        WHERE activities.status = 'done'
+    ");
+    $stmt->execute();
+    $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if ($activities) {
+        $result['success'] = true;
+        $result['data'] = $activities;
+    }
+
+    return $result;
+}
+
+function getForumEntriesByActivityId($pdo, $activityId) {
+    $result = [
+        'success' => false,
+        'data' => []
+    ];
+
+    $stmt = $pdo->prepare("
+        SELECT message, rating, participant_name
+        FROM forum
+        WHERE activity_id = :activityId
+    ");
+    $stmt->execute(['activityId' => $activityId]);
+    $forumEntries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if ($forumEntries) {
+        $result['success'] = true;
+        $result['data'] = $forumEntries;
+    }
+
+    return $result;
+}
+
+
+
+
