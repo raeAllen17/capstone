@@ -7,9 +7,24 @@ require_once 'includes/formHandler.php';
 $userId = $_SESSION["id"];
 $orgname = '';
 
+
+//sesh message
+$errorMessage = "";
+$successMessage = "";
+if (isset($_SESSION['error_message']) && $_SESSION['error_message'] !== "") {
+    $errorMessage = $_SESSION['error_message'];
+    unset($_SESSION['error_message']); 
+}
+if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") {
+    $successMessage = $_SESSION['success_message'];
+    unset($_SESSION['success_message']); 
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['submit'])) {
         $result=createActivity($pdo, $_POST, $userId);
+        header("location: org_createAct.php");
+        exit();
     } 
 }
 
@@ -33,9 +48,12 @@ if (isset($_SESSION["id"])) {
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
 
     <style>
-
+        * {
+            margin: 0;
+            padding: 0;
+        }
         .file-upload {
-            background-color: gray;
+            background-color: lightgrey;
             height: 428px;
             width: 100%;
             display: flex;
@@ -46,6 +64,10 @@ if (isset($_SESSION["id"])) {
             border-radius: 10px;
             position: relative;
         }
+        .file-upload:hover {
+            border: 2px solid lightblue;
+            box-shadow: 0px 0px 8px rgba(0, 0, 180, 0.6);
+        }
         input[type="file"] {
             display: none;
         }
@@ -54,6 +76,15 @@ if (isset($_SESSION["id"])) {
             border: 2px solid black;
             border-radius: 10px;
             width: 350px;
+        }
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            border: 2px solid lightblue !important;;
+            box-shadow: 0px 0px 8px rgba(0, 0, 180, 0.6);
+            outline: none;
         }
         .slideshow-container {
             border: 2px solid grey;
@@ -117,6 +148,13 @@ if (isset($_SESSION["id"])) {
 </head>
 <body style=" height: 100vh; background-color: lightgrey; margin: 0; padding: 0;">
 
+    <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); 
+    height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: 
+    center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
+    
+    <span id="successMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); 
+    height: 3vw; width: 30vw; background-color: green; z-index: 999; border-radius: 20px; color: white; text-align: 
+    center; display: none; justify-content: center; align-items: center;"><?php echo $successMessage; ?></span> 
     <!--NAVBAR START -->
     <nav id="nav" style="background-color: white;">
         <div class="nav_left">
@@ -136,8 +174,8 @@ if (isset($_SESSION["id"])) {
     </nav>
     <!--NAVBAR END -->
 
-    <div class="container" style="padding-top: 5vh;display: flex; justify-content: center; height: 100vh; position: relative;">
-        <div class="content" style="padding: 50px; height: 100vh;">
+    <div class="container" style="padding-top: 7vh;display: flex; justify-content: center; height: 100vh; position: relative;">
+        <div class="content" style=" padding-top:2vh; height: 100%;">
             <h1 style=" margin-bottom: 10px; font-size: 2.4em;">Create your own Activity and feel the Thrill!</h1>
             <form action="" method="POST" enctype="multipart/form-data">
                 <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 30px; border: 2px solid black; border-radius: 20px; width: 1200px; background-color: white; max-height: 100vh;">
@@ -226,7 +264,7 @@ if (isset($_SESSION["id"])) {
                                     </div>
                                     <input type="hidden" name="pickup_locations" id="pickup_locations_hidden">
                                 </div>
-                                <div style="display: flex; width: 100%; justify-content: flex-end; border-top: 1px solid black;">
+                                <div style="display: flex; width: 100%; justify-content: flex-end; ">
                                     <button type="button" name="cancel" class="blue_buttons" onclick="window.location.href='org_createAct.php'">Cancel</button>
                                     <button type="submit" name="submit" class="blue_buttons">Submit</button>
                                 </div>
@@ -307,7 +345,7 @@ if (isset($_SESSION["id"])) {
             let pickupList = document.getElementById("pickup_list");
             let pickupHidden = document.getElementById("pickup_locations_hidden");
 
-            let pickupPoints = [];
+            let pickupPoints = JSON.parse(pickupHidden.value || '[]');
 
             // Function to update pickup list display
             function updatePickupList() {
@@ -353,7 +391,7 @@ if (isset($_SESSION["id"])) {
 
             // Function to update hidden input
             function updateHiddenInput() {
-                pickupHidden.value = JSON.stringify(pickupPoints); // Stores JSON format for PHP decoding
+                pickupHidden.value = JSON.stringify(pickupPoints);
             }
 
             // Add new pickup point
@@ -392,6 +430,27 @@ if (isset($_SESSION["id"])) {
             updateHiddenInput();
         });
 
+        //sesh messages
+        document.addEventListener("DOMContentLoaded", function() {
+        var errorMsg = document.getElementById("errorMessage");
+        var successMsg = document.getElementById("successMessage");
+
+        if (errorMsg.innerHTML.trim() !== "") {
+            errorMsg.style.display = "flex";
+            setTimeout(() => {
+            errorMsg.style.display = "none";
+            errorMsg.innerHTML = "";
+        }, 2000);
+        }
+
+        if (successMsg.innerHTML.trim() !== "") {
+            successMsg.style.display = "flex";
+            setTimeout(() => {
+            successMsg.style.display = "none";
+            successMsg.innerHTML = ""; 
+        }, 2000);
+        }
+        });
 
     </script>
 </body>

@@ -18,6 +18,18 @@ if (isset($_SESSION['id'])) {
 }
 
 
+//session messages
+$errorMessage = "";
+$successMessage = "";
+if (isset($_SESSION['error_message']) && $_SESSION['error_message'] !== "") {
+    $errorMessage = $_SESSION['error_message'];
+    unset($_SESSION['error_message']); 
+}
+if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") {
+    $successMessage = $_SESSION['success_message'];
+    unset($_SESSION['success_message']); 
+}
+
 //fetching functions 
 $data = displayOrgActivities($pdo, $userId);
 ?>
@@ -71,9 +83,31 @@ $data = displayOrgActivities($pdo, $userId);
         th {
             font-size: 1.8vh;
         }
+        ::-webkit-scrollbar {
+        width: 12px; 
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.5); 
+            border-radius: 10px;
+            border: 3px solid transparent;
+        }
+        #calendar-img{
+            transition: transform 0.2s ease;
+        }
+        #calendar-img:hover{
+            transform: scale(1.2);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body style="background-color: white; height: 100vh; width: 100%;">
+
+    <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
+    <span id="successMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: green; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $successMessage; ?></span>    
+
     <nav id="nav" style="background-color: white;">
         <div class="nav_left">
             <ul class="navbar">
@@ -91,7 +125,7 @@ $data = displayOrgActivities($pdo, $userId);
         </div>         
     </nav>
 
-    <div class="container" style=" padding-top: 7vh; width: 100%; display: flex; justify-content: center; flex-grow:1 ;">
+    <div class="container" style=" padding-top: 7vh; height:100%; width: 100%; display: flex; justify-content: center; flex-grow:1 ;">
         <div class="container-wrap" style="height: auto; width: 100%; padding: 3vh; display: flex; flex-direction: column; align-items: center; gap: 2vw;">
             <div style=" height: auto; width: 100%; text-align: center;">
                 <h1>Hi <?php echo htmlspecialchars($orgname)?>, here to create an activity?</h1><br>
@@ -99,8 +133,16 @@ $data = displayOrgActivities($pdo, $userId);
             </div>
 
             <div style="width: 70%; height: 30vw; box-shadow: 1px 2px 6px 0.1px; padding: 2vw; border-radius: 20px; display: flex; flex-direction: column; gap: 1vw; background-color: #A9BA9D;">
-                <h1 style=" color: azure;">Activities to Look Forward</h1>
-                <div style="width: 100%; height:100%; border: 2px solid black; border-radius: 10px; padding: 2vw; background-color: azure;">
+                <div style=" display: flex; justify-content:space-between; width: 100%;">
+                    <h1 style=" color: azure;">Activities to Look Forward</h1>
+                    <div style=" padding: 0vw 2vw;">
+                        <a href="orgCalendarModule.php">
+                            <img id="calendar-img" src="../imgs/icon_calendar.png" alt="Calendar" style="height: 50px; width: 50px;">
+                        </a>
+                    </div>  
+                </div>
+            
+                <div style="width: 100%; height:100%; border: 2px solid black; border-radius: 10px; padding: 2vw; background-color: azure; overflow: auto;">
                     <table>
                         <thead>
                             <tr>
@@ -194,6 +236,29 @@ $data = displayOrgActivities($pdo, $userId);
             console.error("Popup element not found!");
         }
     }
+
+
+    //session messages
+    document.addEventListener("DOMContentLoaded", function() {
+        var errorMsg = document.getElementById("errorMessage");
+        var successMsg = document.getElementById("successMessage");
+
+        if (errorMsg.innerHTML.trim() !== "") {
+            errorMsg.style.display = "flex";
+            setTimeout(() => {
+            errorMsg.style.display = "none";
+            errorMsg.innerHTML = "";
+        }, 2000);
+        }
+
+        if (successMsg.innerHTML.trim() !== "") {
+            successMsg.style.display = "flex";
+            setTimeout(() => {
+            successMsg.style.display = "none";
+            successMsg.innerHTML = ""; 
+        }, 2000);
+        }
+        });
     </script>
     </body>
 </html>

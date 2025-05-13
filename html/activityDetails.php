@@ -140,11 +140,11 @@ $qrCodeData = displayQRCodes($pdo, $org_id);
             <div class="nav_left">
                 <ul class = "navbar">
                     <li><input type="button" class="logo"></li>
-                    <li style=" border-bottom: 2px solid green;"><a href="" >Home</a></li>
-                    <li><a href="joiner_activityPage.php" >Activity</a></li>
-                    <li><a href="joiner_forumPage.php" >Forum</a></li>
-                    <li><a href="joiner_marketplace.php" >Marketplace</a></li>
-                    <li><a href="joiner_notification.php" >Notification</a></li>
+                    <li style=" border-bottom: 2px solid green;"><a href="joiner_homePage.php">Home</a></li>
+                    <li><a href="joiner_activityPage.php" id="act-nav">Activity</a></li>
+                    <li><a href="joiner_forumPage.php" id="forum-nav" >Forum</a></li>
+                    <li><a href="joiner_marketplace.php" id="marketplace-nav">Marketplace</a></li>
+                    <li><a href="joiner_notification.php" id="notification-nav">Notification</a></li>
                 </ul>
             </div>
             <div class="nav_right">                 

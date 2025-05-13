@@ -247,7 +247,7 @@
                     <h4 style="color: lightgray;">*Fill up all the blanks*</h4>
 
                     
-                    <form method="POST" action="" autocomplete="off" onsubmit="return validatePassword();">
+                    <form method="POST" action="" autocomplete="off" onsubmit="return validatePassword(this);">
                         <div id="input_group">
                             <input type="text" name="firstname" placeholder="Firstname" required class="joiner_registration">
                             <input type="text" name="lastname" placeholder="Lastname" required class="joiner_registration">
@@ -290,11 +290,11 @@
                     <h1 style="font-size:2em;">Register</h1>
                     <h4 style="color: lightgray;">*Fill up all the blanks*</h4>
 
-                <form method="POST" action="" autocomplete="off" enctype="multipart/form-data">
+                <form method="POST" action="" autocomplete="off" enctype="multipart/form-data" onsubmit="return validatePassword(this);">
                     <div id="input_group">
-                        
                         <input type="text" name="orgname" placeholder="Organization Name" required>
-                        <input type="password" name="orgpass" placeholder="Password" required minlength="9">
+                        <input type="password" name="orgpass" placeholder="Password" required minlength="9" id="password">
+                        <input type="password" name="cpassword" placeholder="Confirm Password" id="cpassword" required class="joiner_registration" minlength="9">
                         <input type="email" name="orgemail" placeholder="Email Address" required>
                         <input type="text" name="CEO" placeholder="CEO" required>
                         <input type="text" name="orgadd" placeholder="Brgy-Locality-Province" required pattern="^[a-zA-Z\s]+,\s[a-zA-Z\s]+,\s[a-zA-Z\s]+$">
@@ -318,16 +318,22 @@
             <span id="good-toast-message"></span>
         </div>
         <script>
-            function validatePassword() {
-                let pw = document.getElementById("password").value;
-                let cpw = document.getElementById("cpassword").value;
+            function validatePassword(form) {
+                const pw = form.querySelector('input[name="password"], input[name="orgpass"]');
+                const cpw = form.querySelector('input[name="cpassword"]');
 
-                if (pw !== cpw) {
+                if (!pw || !cpw) {
+                    alert("Password fields not found.");
+                    return false;
+                }
+
+                if (pw.value !== cpw.value) {
                     alert("Passwords do not match!");
                     return false;
                 }
                 return true;
             }
+
 
             //MODAL INTERACTION
             function openModal(modalId, event) {

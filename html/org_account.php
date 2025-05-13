@@ -200,22 +200,22 @@ $qrCodeData = displayQRCodes($pdo, $userId);
                     <form action="">
                         <div style="display: flex; flex-direction: column; padding: 10px; gap:5px;">
                             <legend>Organization Name</legend>
-                            <input type="text" value="<?php echo htmlspecialchars($userData['orgname'])?>">
+                            <input readonly type="text" value="<?php echo htmlspecialchars($userData['orgname'])?>">
                             <legend>Email</legend>
-                            <input type="email" value="<?php echo htmlspecialchars($userData['orgemail'])?>">
+                            <input readonly type="email" value="<?php echo htmlspecialchars($userData['orgemail'])?>">
                             <legend>CEO</legend>
-                            <input type="text" value="<?php echo htmlspecialchars($userData['ceo'])?>">
+                            <input readonly type="text" value="<?php echo htmlspecialchars($userData['ceo'])?>">
                             <legend>Address</legend>
-                            <input type="text" value="<?php echo htmlspecialchars($userData['orgadd'])?>">
+                            <input readonly type="text" value="<?php echo htmlspecialchars($userData['orgadd'])?>">
                             <legend>Contact Number</legend>
-                            <input type="number" value="<?php echo htmlspecialchars($userData['orgnumber'])?>" class="no-spinner">
+                            <input readonly type="number" value="<?php echo htmlspecialchars($userData['orgnumber'])?>" class="no-spinner">
                         </div>                 
                     </form>                
-                    <div style="width: 100%; display: flex; justify-content: flex-end;">
-                        <form action="" method="POST">
-                            <button type="submit" name="logout_button">Logout</button>
-                        </form>
-                        <button class="blue_buttons">Confirm</button>
+                    <div style="width: 100%;">
+                        <form action="" method="POST" style="width: 100%; display: flex; justify-content: space-between;">
+                            <button type="submit" name="logout_button" class="blue_buttons" style="background: red;">Logout</button>
+                            <button class="blue_buttons" id="edit-button">Confirm</button>
+                        </form>   
                     </div> 
                 </div>
             </div>

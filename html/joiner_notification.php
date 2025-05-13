@@ -18,8 +18,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         if (isset($_POST['participant_id'])) {
             $participantId = $_POST['participant_id'];
             $activityId = $_POST['activity_id'];
+            $orgId = $_POST['org_id'];
             updateParticipantStatus($pdo, $participantId, $activityId);
             updateParticipantNumber($pdo, $activityId);
+            insertNotification($pdo, $activityId, $orgId, $participantId);
             header("Location: " . $_SERVER['PHP_SELF']);
             exit();
         }
@@ -80,10 +82,10 @@ $cancelledNotification = getNotificationCancelled($pdo, $userId)
                     <li><a href="joiner_activityPage.php">Activity</a></li>
                     <li><a href="joiner_forumPage.php" >Forum</a></li>
                     <li><a href="joiner_marketplace.php" >Marketplace</a></li>
-                    <li style=" border-bottom: 2px solid green;"><a href="joiner_notification.php" >Notification</a></li>
+                    <li><a href="joiner_notification.php" id="notification-nav">Notification</a></li>
                 </ul>
             </div>
-            <div class="nav_right" id="nav_right_click" onclick="window.location.href='walapa.php';">
+            <div class="nav_right" id="nav_right_click" onclick="window.location.href='walapa.php';">           
                 <img src="../imgs/defaultuser.png" style="height: 30px; width: 30px;"> 
                 <span style="display:flex; align-items:center;"><?php echo htmlspecialchars($joinerName); ?></span>
             </div>
@@ -107,7 +109,8 @@ $cancelledNotification = getNotificationCancelled($pdo, $userId)
                                     <td style=" padding-left: 10%;">
                                         <form action="" method="POST" enctype="multipart/form-data">
                                             <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($participant['participant_id']); ?>">
-                                            <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($participant['id']); ?>">
+                                            <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($participant['activity_id']); ?>">
+                                            <input type="hidden" name="org_id" value="<?php echo htmlspecialchars($participant['org_id']); ?>">
                                             <button class="button-buttons" name="check" style="background: url('../imgs/icon_check.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> 
                                         </form>       
                                     </td>

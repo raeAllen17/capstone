@@ -2,6 +2,9 @@
 session_start();
 require_once 'includes/dbCon.php';
 require_once 'includes/formHandler.php';
+require_once 'includes/activity_store.php';
+
+
 
 if (isset($_SESSION['id'])) {
     $userId = $_SESSION['id']; 
@@ -13,9 +16,7 @@ if (isset($_SESSION['id'])) {
     header('location: landing_page.php');
     exit;
 }
-
-echo $userId;
-
+$forumResult = orgForum($pdo, $userId);
 ?>
 
 <!DOCTYPE html>
@@ -28,7 +29,7 @@ echo $userId;
 
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
 </head>
-<body style=" height: 100vh;">
+<body style=" height: auto;">
     <nav id="nav" style="background-color: white;">
         <div class="nav_left">
             <ul class="navbar">
@@ -46,10 +47,73 @@ echo $userId;
         </div>         
     </nav>
 
-    <div class="container" stlye=" height: 100%; width: 100%;">
-        <div class="container-wrap" style=" padding-top: 7vh; height: 100%; width: 100%; background-color: red;">
+    <div class="container" stlye=" height: 100%; width: 100%; position: relative;">
+        <div class="container-wrap" style=" padding-top: 10vh; height: auto; width: 40%; position: absolute; left: 50%; transform: translate(-50%);">
+        <h1 style="font-size: 3rem;">Ratings</h1>
+        <?php if ($forumResult['success'] && count($forumResult['data']) > 0): ?>
+            <div style="">
+                <?php foreach ($forumResult['data'] as $index => $activity): ?>
+                    <div style=" border: 2px solid green; margin: 1vw 0; border-radius: 20px;">
+                        <div style=" background-color: #154472; color: azure; padding: 0.5vw 1vw; border-top-right-radius: 18px; border-top-left-radius: 18px;">
+                            <div style=" margin: 1vw 0vw;">
+                                <h2><?php echo htmlspecialchars($activity['activity_name']); ?></h2>
+                                <p> <?php echo htmlspecialchars($activity['date']); ?></p>  
+                            </div>
 
-        </div>
+                            <div id="slideshow-<?php echo $index; ?>" class="slideshow" style="height:400px; width:100%; border-radius: 5px;"></div>
+                            <?php 
+                                // Prepare images
+                                $images = [];
+                                if (!empty($activity['images'])) {
+                                    $paths = explode(',', $activity['images']);
+                                    foreach ($paths as $path) {
+                                        $basename = basename(trim($path));
+                                        $images[] = '../uploads/' . $basename;
+                                    }
+                                }
+                            ?>
+                            <script>
+                                document.addEventListener("DOMContentLoaded", function () {
+                                    const images<?php echo $index; ?> = <?php echo json_encode($images); ?>;
+                                    const slideshow<?php echo $index; ?> = document.getElementById("slideshow-<?php echo $index; ?>");
+
+                                    if (slideshow<?php echo $index; ?> && images<?php echo $index; ?>.length > 0) {
+                                        let i = 0;
+                                        function showSlide<?php echo $index; ?>() {
+                                            slideshow<?php echo $index; ?>.style.backgroundImage = `url('${images<?php echo $index; ?>[i]}')`;
+                                            i = (i + 1) % images<?php echo $index; ?>.length;
+                                            setTimeout(showSlide<?php echo $index; ?>, 2000);
+                                        }
+                                        showSlide<?php echo $index; ?>();
+                                    }
+                                });
+                            </script>
+                        </div>                   
+                        <?php 
+                            $feedbacks = getForumEntriesByActivityId($pdo, $activity['id']);
+                            if ($feedbacks['success'] && count($feedbacks['data']) > 0): 
+                                foreach ($feedbacks['data'] as $entry): ?>
+                                    <div style="border-top: 1px solid grey; padding: 1.5vw 1vw;">
+                                        <h4><?php echo htmlspecialchars($entry['participant_name']); ?>
+                                        <?php
+                                        $rating = (int)$entry['rating'];
+                                        for ($i = 1; $i <= 5; $i++) {
+                                            echo $i <= $rating ? '⭐' : '✩';
+                                        }
+                                        ?></h4>
+                                        <p><?php echo htmlspecialchars($entry['message']); ?></p>
+                                    </div>
+                                <?php endforeach;
+                                else: ?>
+                                <p>No feedback for this activity.</p>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>  
+            </div>
+        <?php else: ?>
+            <p>No activities with feedback found.</p>
+        <?php endif; ?>
     </div>
+
 </body>
 </html>

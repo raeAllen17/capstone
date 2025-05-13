@@ -4,9 +4,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 function createActivity($pdo, $userData, $userId){
     $result = [
-        'success' => false,
-        'failed_message' => '',
-        'success_message' => '',    
+        'success' => false,  
     ];
 
     $org_id = $userId;
@@ -18,6 +16,14 @@ function createActivity($pdo, $userData, $userId){
     $difficulty = $userData["difficulty"];
     $price = $userData["price"];
     $participants = $userData["participants"];
+
+    $activityDate = strtotime($date);
+    $currentDate = strtotime(date('Y-m-d'));
+    
+    if ($activityDate < $currentDate) {
+        $_SESSION['error_message'] = "The activity date cannot be in the past.";
+        return $result;
+    }
 
     $pickup_locations = isset($userData["pickup_locations"]) ? json_decode($userData["pickup_locations"], true) : [];
     $pickup_locations = implode(',', $pickup_locations);
@@ -46,9 +52,9 @@ function createActivity($pdo, $userData, $userId){
     // Execute the statement
     if ($stmt->execute([$org_id, $activity_name, $description, $location, $date, $distance, $difficulty, $price, $participants,$pickup_locations, $images])) {
         $result['success'] = true;
-        $result['success_message'] = "New activity created successfully";
+        $_SESSION['success_message'] = "New activity created successfully";
     } else {
-        $result['failed_message'] = "Error: " . $stmt->errorInfo()[2];
+        $_SESSION['error_message'] = "Error: " . $stmt->errorInfo()[2];
     }
 
     return $result;
@@ -208,7 +214,7 @@ function actRegis($pdo, $userData, $pickup_location, $file) {
 
             $stmt->bindParam(':org_id', $orgId, PDO::PARAM_INT);
             $stmt->bindParam(':activity_id', $activityId, PDO::PARAM_INT);
-            $stmt->bindParam(':pickup_location', $pickup_location, PDO::PARAM_STR); // ✅ should be string
+            $stmt->bindParam(':pickup_location', $pickup_location, PDO::PARAM_STR);
             $stmt->bindParam(':participant_id', $joinerId, PDO::PARAM_INT);
             $stmt->bindParam(':image', $imageData, PDO::PARAM_LOB);
             $stmt->bindParam(':status', $status, PDO::PARAM_STR);
@@ -291,15 +297,26 @@ function rejectRequest($pdo, $participantId, $activityId){
 
 function getNotification($pdo, $participantId) {
     $stmt = $pdo->prepare("
-        SELECT p.id, p.participant_id, j.firstName, j.lastName, a.id, a.activity_name as activity_name
+        SELECT 
+            p.id, 
+            p.participant_id, 
+            p.org_id,
+            j.firstName, 
+            j.lastName, 
+            a.id AS activity_id, 
+            a.activity_name
         FROM participants p
         JOIN account_joiner j ON p.participant_id = j.id 
         JOIN activities a ON p.activity_id = a.id 
-        WHERE p.participant_id = ? AND p.notified = 'yes' AND p.status = 'pending'
+        WHERE p.participant_id = ? 
+          AND p.notified = 'yes' 
+          AND p.status = 'pending'
     ");
     $stmt->execute([$participantId]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+
 
 function updateParticipantStatus ($pdo, $participantId, $activityId) {
     $stmt = $pdo->prepare("UPDATE participants SET status = 'active' WHERE participant_id = ? AND activity_id = ?");
@@ -418,7 +435,19 @@ function notifyParticipant($pdo, $participantId, $activityId) {
         $participant = $stmt->fetch(PDO::FETCH_ASSOC);
         $email = $participant['email'];
 
-        // Prepare the email
+        $activityStmt = $pdo->prepare("SELECT activity_name FROM activities WHERE id = :activity_id");
+        $activityStmt->bindParam(':activity_id', $activityId, PDO::PARAM_INT);
+        $activityStmt->execute();
+        $activity = $activityStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$activity) {
+            return [
+                'success' => false,
+                'message' => "Activity not found."
+            ];
+        }
+        $activityName = htmlspecialchars($activity['activity_name']);
+
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
@@ -433,15 +462,20 @@ function notifyParticipant($pdo, $participantId, $activityId) {
             $mail->addAddress($email);
             $mail->isHTML(true); 
 
-            $mail->Subject = "Registration Notification";
+            $mail->Subject = "Registration Notification \"$activityName\"";
             $mail->Body    = "Hello,<br><br>You can now try to register again for the activity. We look forward to your participation!<br><br>Best regards,<br>JOYn Team";
             $mail->AltBody = "Hello, You can now try to register again for the activity. We look forward to your participation! Best regards, JOYn Team";
 
             $mail->send();
 
+            $updateStmt = $pdo->prepare("UPDATE participants SET notified = 'yes' WHERE participant_id = :participant_id AND activity_id = :activity_id");
+            $updateStmt->bindParam(':participant_id', $participantId, PDO::PARAM_INT);
+            $updateStmt->bindParam(':activity_id', $activityId, PDO::PARAM_INT);
+            $updateStmt->execute();
+
             return [
                 'success' => true,
-                'message' => "Notification email has been sent to $email."
+                'message' => "Notification email has been sent to participant."
             ];
         } catch (Exception $e) {
             return [
@@ -496,12 +530,45 @@ function sendActivityReminderEmail($email, $subject, $message) {
         ];
     }
 }
+function updateActivityStatus($pdo, $activityId) {
+    $result = [
+        'success' => false,
+        'error_message' => '',
+        'success_message' => '',
+    ];
 
-function updateActivityStatus ($pdo, $activityId){
-    $stmt = $pdo->prepare("UPDATE activities SET status = 'done' WHERE id = ?");
-    return $stmt->execute([$activityId]);
+    $stmt = $pdo->prepare("SELECT date FROM activities WHERE id = ?");
+    $stmt->execute([$activityId]);
+    $activity = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$activity) {
+        $result['error_message'] = "Activity not found.";
+        return $result;
+    }
+
+    $eventDate = $activity['date'];
+    $today = date('Y-m-d');
+
+    if ($today < $eventDate) {
+        $result['error_message'] = "Activity is not yet done. Scheduled for {$eventDate}.";
+        $_SESSION['error_message'] = $result['error_message'];
+        return $result;
+    }
+    
+    $updateStmt = $pdo->prepare("UPDATE activities SET status = 'done' WHERE id = ?");
+    $updateSuccess = $updateStmt->execute([$activityId]);
+
+    if ($updateSuccess) {
+        $result['success'] = true;
+        $result['success_message'] = "Congratulations on a successful activity!";
+        $_SESSION['success_message'] = $result['success_message'];
+    } else {
+        $result['error_message'] = "Failed to update status.";
+        $_SESSION['error_message'] = $result['error_message'];
+    }
+
+    return $result;
 }
-
 function getActiveActivites($pdo, $participantId) {
     $stmt = $pdo->prepare("SELECT activity_id FROM participants WHERE participant_id = ? AND status = 'active'");
     $stmt->execute([$participantId]);
@@ -601,7 +668,7 @@ function getCurrentActivities($pdo, $userId) {
         SELECT activities.id, activities.activity_name
         FROM participants
         JOIN activities ON participants.activity_id = activities.id
-        WHERE participants.status = 'active' AND participants.participant_id = ?
+        WHERE participants.status = 'active' AND participants.participant_id = ? AND refund = 'no'
     ");
     $stmt->execute([$userId]);
     $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -658,6 +725,159 @@ function updateRefundRequest($pdo, $participantId, $activityId){
 
     return true;
 }
+
+function updateActivityDetails($pdo, $userId, $activityId, $data) {
+    $result = [
+        'success' => false,
+        'error_message' => '',
+        'success_message' => '',
+        'data' => []
+    ];
+
+    try {
+        $sql = "UPDATE activities SET 
+                    activity_name = :activity_name,
+                    description = :description,
+                    location = :location,
+                    date = :date,
+                    distance = :distance,
+                    difficulty = :difficulty,
+                    price = :price,
+                    participants = :participants,
+                    pickup_locations = :pickup_locations
+                WHERE id = :activity_id AND org_id = :user_id";
+
+        $stmt = $pdo->prepare($sql);
+
+        $stmt->bindParam(':activity_name', $data['activity_name']);
+        $stmt->bindParam(':description', $data['description']);
+        $stmt->bindParam(':location', $data['location']);
+        $stmt->bindParam(':date', $data['date']);
+        $stmt->bindParam(':distance', $data['distance']);
+        $stmt->bindParam(':difficulty', $data['difficulty']);
+        $stmt->bindParam(':price', $data['price'], PDO::PARAM_INT);
+        $stmt->bindParam(':participants', $data['participants'], PDO::PARAM_INT);
+        $stmt->bindParam(':pickup_locations', $data['pickup_locations']);
+        $stmt->bindParam(':activity_id', $activityId, PDO::PARAM_INT);
+        $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+
+        if ($stmt->execute()) {
+            if ($stmt->rowCount() > 0) {
+                $result['success'] = true;
+                $_SESSION['success_message'] = 'Activity updated successfully.';
+                $result['data'] = ['activity_id' => $activityId];
+            } else {
+                $_SESSION['error_message'] = 'Activity failed to upload, check input values.';
+            }
+        } else {
+            $_SESSION['error_message'] = 'Failed to execute update statement.';
+        }
+    } catch (PDOException $e) {
+        error_log("Activity update failed: " . $e->getMessage());
+        $_SESSION['error_message'] = 'Database error: ' . $e->getMessage();
+    }
+
+    return $result;
+}
+
+function calendarModuleActivities($pdo, $year, $month) {
+    $stmt = $pdo->prepare("
+        SELECT DAY(date) AS day, COUNT(*) AS activity_count 
+        FROM activities 
+        WHERE YEAR(date) = :year AND MONTH(date) = :month 
+        GROUP BY day
+    ");
+    $stmt->bindParam(':year', $year, PDO::PARAM_INT);
+    $stmt->bindParam(':month', $month, PDO::PARAM_INT);
+    $stmt->execute();
+
+    // Reformat as [day => activity_count]
+    $results = [];
+    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+        $results[(int)$row['day']] = (int)$row['activity_count'];
+    }
+
+    return $results;
+}
+
+function getNotificationOrg($pdo, $userId) {
+    // Prepare the SQL query to get notifications based on org_id
+    $stmt = $pdo->prepare("SELECT id, org_id, activity_id, message, created_at FROM notifications WHERE org_id = :org_id");
+    $stmt->bindParam(':org_id', $userId, PDO::PARAM_INT);
+
+    // Execute the query
+    $stmt->execute();
+
+    // Fetch the results as an associative array
+    $notifications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Check if there are any notifications
+    if ($notifications) {
+        return $notifications; // Return notifications if found
+    } else {
+        return []; // Return an empty array if no notifications found
+    }
+}
+function orgForum($pdo, $userId) {
+    $result = [
+        'success' => false,
+        'data' => []
+    ];
+
+    $stmt = $pdo->prepare("
+        SELECT activities.*, account_org.orgname
+        FROM activities
+        LEFT JOIN account_org ON activities.org_id = account_org.id
+        WHERE activities.status = 'done' AND activities.org_id = :org_id
+    ");
+    
+    $stmt->execute(['org_id' => $userId]);
+    $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if ($activities) {
+        foreach ($activities as &$activity) {
+            // Parse images from comma-separated string
+            $images = [];
+            if (!empty($activity['images'])) {
+                $imagePaths = explode(',', $activity['images']);
+                foreach ($imagePaths as $img) {
+                    $basename = basename(trim($img));
+                    $images[] = '../uploads/' . $basename;  // or '/uploads/' if used directly in browser
+                }
+            }
+
+            $activity['image_urls'] = $images;
+        }
+
+        $result['success'] = true;
+        $result['data'] = $activities;
+    }
+
+    return $result;
+}
+function insertNotification($pdo, $activityId, $orgId, $participantId){
+
+    $stmtActivity = $pdo->prepare("SELECT activity_name FROM activities WHERE id = ?");
+    $stmtActivity->execute([$activityId]);
+    $activity = $stmtActivity->fetch(PDO::FETCH_ASSOC);
+
+    //get joiner name for notifications table
+    $stmtParticipant = $pdo->prepare("SELECT firstName FROM account_joiner WHERE id = ?");
+    $stmtParticipant->execute([$participantId]);
+    $participantName = $stmtParticipant->fetch(PDO::FETCH_ASSOC);
+
+    $participantName = $participantName['firstName']; 
+    $activity = $activity['activity_name'];
+
+    $message = "$participantName confirmed to join $activity";
+
+    $stmt = $pdo->prepare("INSERT INTO notifications (org_id, activity_id, message) VALUES (?, ?, ?)");
+    $stmt->execute([$orgId, $activityId, $message]);
+}
+
+
+
+
 
 
 
