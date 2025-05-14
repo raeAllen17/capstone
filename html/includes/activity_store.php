@@ -875,6 +875,190 @@ function insertNotification($pdo, $activityId, $orgId, $participantId){
     $stmt->execute([$orgId, $activityId, $message]);
 }
 
+function getMarketplace($pdo, $sessionId) {
+    $stmt = $pdo->prepare("
+        SELECT 
+            m.id AS marketplace_id,
+            m.participant_id,
+            aj.firstName,
+            aj.lastName,
+            m.item_name,
+            m.price,
+            m.location,
+            m.condition,
+            m.category,
+            m.description,
+            i.image
+        FROM 
+            marketplace m
+        LEFT JOIN 
+            marketplace_images i ON m.id = i.marketplace_id
+        LEFT JOIN 
+            account_joiner aj ON m.participant_id = aj.id
+        WHERE 
+            m.participant_id != :sessionId
+            AND m.status = 'pending'
+        ORDER BY 
+            m.id DESC
+    ");
+    
+    $stmt->execute([':sessionId' => $sessionId]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $grouped = [];
+    foreach ($rows as $row) {
+        $id = $row['marketplace_id'];
+        if (!isset($grouped[$id])) {
+            $grouped[$id] = [
+                'id' => $row['marketplace_id'],
+                'participant_id' => $row['participant_id'],
+                'firstName' => $row['firstName'],
+                'lastName' => $row['lastName'],
+                'item_name' => $row['item_name'],
+                'price' => $row['price'],
+                'location' => $row['location'],
+                'condition' => $row['condition'],
+                'category' => $row['category'],
+                'description' => $row['description'],
+                'images' => [],
+            ];
+        }
+
+        if ($row['image']) {
+            $grouped[$id]['images'][] = base64_encode($row['image']);
+        }
+    }
+
+    return array_values($grouped);
+}
+
+function getUserListing($pdo, $userId){
+    $stmt = $pdo->prepare("
+        SELECT 
+            m.id AS marketplace_id,
+            m.participant_id,
+            aj.firstName,
+            aj.lastName,
+            m.item_name,
+            m.price,
+            m.location,
+            m.condition,
+            m.category,
+            m.description,
+            i.image
+        FROM 
+            marketplace m
+        LEFT JOIN 
+            marketplace_images i ON m.id = i.marketplace_id
+        LEFT JOIN 
+            account_joiner aj ON m.participant_id = aj.id
+        WHERE 
+            m.participant_id = :sessionId
+        ORDER BY 
+            m.id DESC
+    ");
+    
+    $stmt->execute([':sessionId' => $userId]);
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $grouped = [];
+    foreach ($rows as $row) {
+        $id = $row['marketplace_id'];
+        if (!isset($grouped[$id])) {
+            $grouped[$id] = [
+                'id' => $row['marketplace_id'],
+                'participant_id' => $row['participant_id'],
+                'firstName' => $row['firstName'],
+                'lastName' => $row['lastName'],
+                'item_name' => $row['item_name'],
+                'price' => $row['price'],
+                'location' => $row['location'],
+                'condition' => $row['condition'],
+                'category' => $row['category'],
+                'description' => $row['description'],
+                'images' => [],
+            ];
+        }
+
+        if ($row['image']) {
+            $grouped[$id]['images'][] = base64_encode($row['image']);
+        }
+    }
+
+    return array_values($grouped);
+}
+
+function getTrades($pdo, $userId) {
+    $stmt = $pdo->prepare("
+        SELECT 
+            t.id,
+            t.trade_from_user_id,
+            t.trade_to_user_id,
+            t.status,
+            t.created_at,
+            t.updated_at,
+            af.firstName AS from_user_name,
+            af.lastName AS from_user_last_name,
+            mit.location AS from_user_location,
+            -- Replace NULL from_item_name with 'purchase'
+            IFNULL(mif.item_name, 'Purchase') AS from_item_name,
+            mit.item_name AS to_item_name,
+            -- Get the first image for both 'from' and 'to' items as BLOB
+            (SELECT mi.image FROM marketplace_images mi WHERE mi.marketplace_id = mif.id LIMIT 1) AS from_item_blob,
+            (SELECT mi.image FROM marketplace_images mi WHERE mi.marketplace_id = mit.id LIMIT 1) AS to_item_blob
+        FROM trades t
+        LEFT JOIN account_joiner af ON t.trade_from_user_id = af.id
+        LEFT JOIN marketplace mif ON t.trade_from_item_id = mif.id
+        LEFT JOIN marketplace mit ON t.trade_to_item_id = mit.id
+        WHERE t.trade_to_user_id = :userId
+          AND t.status = 'pending'
+    ");
+    
+    $stmt->execute(['userId' => $userId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getTradeStatus($pdo, $userId) {
+    $stmt = $pdo->prepare("
+        SELECT 
+            t.id,
+            t.trade_from_user_id,
+            t.trade_to_user_id,
+            t.status,
+            t.created_at,
+            t.updated_at,
+            af.firstName AS from_user_name,
+            af.lastName AS from_user_last_name,
+            at.firstName AS to_user_name, 
+            at.lastName AS to_user_last_name, 
+            mit.location AS from_user_location, 
+            -- Replace NULL from_item_name with 'Purchase'
+            IFNULL(mif.item_name, 'Purchase') AS from_item_name,
+            mif.location AS from_item_location,
+            mit.item_name AS to_item_name,
+            mit.location AS to_item_location, -- Location of the 'to' item
+            -- Get the first image for both 'from' and 'to' items as BLOB
+            (SELECT mi.image FROM marketplace_images mi WHERE mi.marketplace_id = mif.id LIMIT 1) AS from_item_blob,
+            (SELECT mi.image FROM marketplace_images mi WHERE mi.marketplace_id = mit.id LIMIT 1) AS to_item_blob
+        FROM trades t
+        LEFT JOIN account_joiner af ON t.trade_from_user_id = af.id
+        LEFT JOIN account_joiner at ON t.trade_to_user_id = at.id  -- Join for trade-to user details
+        LEFT JOIN marketplace mif ON t.trade_from_item_id = mif.id
+        LEFT JOIN marketplace mit ON t.trade_to_item_id = mit.id
+        WHERE t.trade_from_user_id = :userId
+    ");
+    
+    $stmt->execute(['userId' => $userId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
+
+
+
+
+
+
 
 
 
