@@ -16,16 +16,10 @@ if(isset($_SESSION['id'])){
   <link
     href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
     rel="stylesheet"
-  />
+    />
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-  <style>
-    #calendar { 
-      max-width: 100%; 
-      max-height: 100vh; 
-      padding: 10px;
-      margin: 0 auto;
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="../css/calendar.css">
+
 </head>
 <body style="margin: 0; padding: 0;">
   <div id="calendar"></div>
@@ -40,8 +34,8 @@ if(isset($_SESSION['id'])){
           right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
         initialView: 'dayGridMonth',
-        events: 'includes/get_activities.php',
-        selectable: false,    // you said no need to select to create
+        events: 'includes/get_activitiesJoiner.php',
+        selectable: false, 
         editable: false,
         dayMaxEvents: true,
 
@@ -52,7 +46,6 @@ if(isset($_SESSION['id'])){
           // navigate to your show-details page, e.g. show_event.php?id=123
         }
       });
-
       calendar.render();
     });
   </script>

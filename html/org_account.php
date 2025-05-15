@@ -167,7 +167,6 @@ $qrCodeData = displayQRCodes($pdo, $userId);
             <li><a href="org_homePage.php">Home</a></li>
             <li><a href="org_createAct.php">Activity</a></li>
             <li><a href="org_forumPage.php">Forum</a></li>
-            <li><a href="org_marketplace.php">Marketplace</a></li>
             <li><a href="org_notification.php">Notification</a></li>
         </ul>
     </div>
@@ -178,7 +177,7 @@ $qrCodeData = displayQRCodes($pdo, $userId);
 </nav>
 <!--NAVBAR END -->
 
-<body style="height: 100vh; width: 100%; margin: 0; padding: 0; position: relative;">
+<body style="height: 100vh; width: 100%; margin: 0; padding: 0; position: relative; background: linear-gradient(to right, #f0f8ff, #fef9e4, #f5f5f5);">
 
     <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
     <span id="successMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: green; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $successMessage; ?></span>    
@@ -220,14 +219,14 @@ $qrCodeData = displayQRCodes($pdo, $userId);
                 </div>
             </div>
             <div style="width:80%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; gap: 2%; padding: 30px 0px 30px 30px;">
-                <div style="width: 100%; height: 50%;">
+                <div style="width: 100%; height: 50%; background-color: white;">
                     <div style="width: 100%; height: 100%; border: 2px solid black; padding: 30px;">
                         <div>
                             <h2>Your Past Events</h2>
                         </div>
                     </div>                
                 </div>
-                <div style="width: 100%; height: 100%; border: 2px solid black; border-bottom-right-radius: 20px; padding: 30px; position: relative">
+                <div style="width: 100%; height: 100%; border: 2px solid black; border-bottom-right-radius: 20px; padding: 30px; position: relative; background-color: white;">
                     <div>
                         <h2>QR Codes</h2>
                         <p style="color:lightgrey; font-size: 2vh;">**Upload images of your online banks (Maya, Gcash) for registration fees transaction**</p>
@@ -328,6 +327,11 @@ $qrCodeData = displayQRCodes($pdo, $userId);
         }, 2000);
         }
         });
+
+        const editButton = document.getElementById('edit-button');
+        function editDetails (){
+            
+        }
     </script>
 
 </body>

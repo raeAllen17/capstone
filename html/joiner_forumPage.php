@@ -26,7 +26,7 @@ $data = displayRating($pdo);
     <title>Activity</title>
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
 </head>
-<body style=" height:100vh; background-color: white;">
+<body style=" height:100vh; background-color: white; ">
     <nav id="nav">
             <div class="nav_left">
                 <ul class = "navbar">
@@ -38,14 +38,14 @@ $data = displayRating($pdo);
                     <li><a href="joiner_notification.php" >Notification</a></li>
                 </ul>
             </div>
-            <div class="nav_right" id="nav_right_click" onclick="window.location.href='walapa.php';">  
+            <div class="nav_right" id="nav_right_click" onclick="window.location.href='joiner_account.php';">  
                 <img src="../imgs/defaultuser.png" style="height: 30px; width: 30px;"> 
                 <span style="display:flex; align-items:center;"><?php echo htmlspecialchars($joinerName); ?></span>
             </div>          
     </nav>
 
-    <div class="container" style=" height: 100%; width: 100%; padding-top: 7vh; position: relative;">
-        <div class="container-wrap" style="height: auto; width: 80%; padding: 7vh; position: absolute; left: 50%; transform: translate(-50%); display: flex; flex-direction: column; justify-content: space-between; align-items: center;">
+    <div class="container" style=" height: 100%; width: 100%; padding-top: 7vh; position: relative; ">
+        <div class="container-wrap" style="height: 100%; width: 100%; padding: 7vh; position: absolute; left: 50%; transform: translate(-50%); display: flex; flex-direction: column; justify-content: space-between; align-items: center; background: linear-gradient(to right, #A7C7E7, #BCE1F7, #D2F1F3, #E1F8F6);">
             
             <div style=" height: auto; width: 60%;">
                 <h1>Ratings</h1>

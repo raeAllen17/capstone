@@ -88,7 +88,7 @@ function registerUser($pdo, $userData) {
                 $mail->isHTML(true); 
 
                 $mail->Subject = "Your OTP Code";
-                $mail->Body    = "Your OTP code is: <b>$otp</b>Please do not share this code with anyone.The code expires within duration of miutes but you can click resend if the code expires.";
+                $mail->Body    = "Your OTP code is: <b>$otp </b><br><br>Please do not share this code with anyone.The code expires within duration of miutes but you can click resend if the code expires.";
                 $mail->AltBody = "Your OTP code is: $otp";
 
                 $mail->send();
@@ -142,19 +142,19 @@ function joiner_otp($pdo, $userData){
                     $stmt->execute([':email' => $email]);
 
                     $result['success'] = true;
-                    $result['success_message'] = "OTP verified successfully. You will be redirected to home page.";
+                    $_SESSION['success_message'] = "OTP verified successfully. You will be redirected to home page.";
                 } else {
-                    $result['failed_message'] = "OTP has expired. Please request a new OTP.";
+                    $_SESSION['error_message'] = "OTP has expired. Please request a new OTP.";
                 }     
             } else {
-                $result['failed_message'] = "OTP mismatch, try again or resend OTP.";
+                $_SESSION['error_message'] = "OTP mismatch, try again or resend OTP.";
             }
         } else {
-            $result['failed_messagee'] = "No user found.";
+            $_SESSION['error_messagee'] = "No user found.";
         }
 
     } catch (PDOException $e) {
-        $result['failed_message'] = "Error: " . $e->getMessage();
+        $_SESSION['error_message'] = "Error: " . $e->getMessage();
     }
     return $result;
 } 

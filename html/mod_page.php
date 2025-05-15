@@ -1,8 +1,18 @@
 <?php 
+session_start();
 require_once '../html/includes/dbCon.php';
 require_once '../html/includes/modHandler.php';
 $data = loadData($pdo);
-
+$errorMessage = "";
+$successMessage = "";
+if (isset($_SESSION['error_message']) && $_SESSION['error_message'] !== "") {
+    $errorMessage = $_SESSION['error_message'];
+    unset($_SESSION['error_message']); 
+}
+if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") {
+    $successMessage = $_SESSION['success_message'];
+    unset($_SESSION['success_message']); 
+}
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['action']) && $_POST['action'] == 'reject') {
         
@@ -10,13 +20,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $row_id = $_POST['row_id'];
         $documents = isset($_POST['documents']) ? $_POST['documents'] : [];
         $custom_message = isset($_POST['custom_message']) ? $_POST['custom_message'] : '';
-        
+    
         rejectRegis($pdo, $documents, $custom_message, $recipient_email, $row_id);
+        $_SESSION['success_message'] = "Message sent to the user.";
+
     } elseif (isset($_POST['action']) && $_POST['action'] == 'accept') {
         $recipient_email = $_POST['recipient_email'];
-        $row_id = $_POST['row_id'];
-        
+        $row_id = $_POST['row_id']; 
+
         addRegis($pdo, $recipient_email, $row_id);
+        $_SESSION['success_message'] = "Organizer accepted successfully!";
     }
 }
 
@@ -177,6 +190,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </style>
 
 <body>
+<span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
+<span id="successMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: green; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $successMessage; ?></span>    
+
     <div class="background"></div>
     <section class="header"> 
         <img src= "../imgs/logo.png" alt="" height="250px" id="img_logo">
@@ -314,6 +330,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             closeModal('modal_reject');
         }
     }
+    document.addEventListener("DOMContentLoaded", function() {
+        var errorMsg = document.getElementById("errorMessage");
+        var successMsg = document.getElementById("successMessage");
+
+        if (errorMsg.innerHTML.trim() !== "") {
+            errorMsg.style.display = "flex";
+            setTimeout(() => {
+            errorMsg.style.display = "none";
+            errorMsg.innerHTML = "";
+        }, 2000);
+        }
+
+        if (successMsg.innerHTML.trim() !== "") {
+            successMsg.style.display = "flex";
+            setTimeout(() => {
+            successMsg.style.display = "none";
+            successMsg.innerHTML = ""; 
+        }, 2000);
+        }
+        });
     </script>
 </body>
 </html>

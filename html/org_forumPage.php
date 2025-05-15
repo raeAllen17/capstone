@@ -29,7 +29,7 @@ $forumResult = orgForum($pdo, $userId);
 
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
 </head>
-<body style=" height: auto;">
+<body style=" min-height: 100vh; background: linear-gradient(140deg, #CBD5D9, #CDECC9, #FFFFFF);">
     <nav id="nav" style="background-color: white;">
         <div class="nav_left">
             <ul class="navbar">
@@ -37,7 +37,6 @@ $forumResult = orgForum($pdo, $userId);
                 <li><a href="org_homePage.php">Home</a></li>
                 <li><a href="org_createAct.php">Activity</a></li>
                 <li style=" border-bottom: 2px solid green;"><a href="">Forum</a></li>
-                <li><a href="org_marketplace.php">Marketplace</a></li>
                 <li><a href="org_notification.php">Notification</a></li>
             </ul>
         </div>

@@ -72,6 +72,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
             $participantId = $_POST['participant_id'];
             $activityId = $_POST['activity_id'];
             rejectRequest($pdo, $participantId, $activityId);
+            
+            //insert notification
+            $stmt = $pdo->prepare("SELECT activity_name FROM activities WHERE id = ?");
+            $stmt->execute([$activityId]);
+            $activity = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($activity) {
+                $activityName = $activity['activity_name'];
+                $message = "<b>$activityName</b> :Proof of payment unclear or downpayment did not meet the minimum value. Kindly resend your proof of payment.";
+            
+                $stmt = $pdo->prepare("INSERT INTO notification_joiner (participant_id, message) VALUES (?, ?)");
+                $stmt->execute([$participantId, $message]);
+            
+                $_SESSION['success_message'] = "Notice successful.";
+            } else {
+                $_SESSION['error_message'] = "Activity not found.";
+            }
+
+            header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
+            exit();
         }
     } else if (isset($_POST['notify'])){
         if (isset($_POST['participant_id'])) {
@@ -103,7 +122,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     
                     if ($email) {
                         sendActivityReminderEmail($email, $subject, $message);
+                        $_SESSION['success_message'] = "All users notified.";
                         header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
+                        exit();
                     }
                 } else {
                     echo "Could not retrieve email for participant ID: $participantId.";
@@ -126,12 +147,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     
                 if ($email) {
                     sendActivityReminderEmail($email, $subject, $message);
+                    $_SESSION['success_message'] = "User notified."; 
                     header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
+                    exit();
                 }
             } else {
                 echo "Could not retrieve email for participant ID: $participantId.";
             }
-        }     
+        }  
+  
     } else if (isset($_POST['update_activityStatus'])){
         $activityId = $_GET['id'];
         $result= updateActivityStatus($pdo, $activityId);
@@ -142,15 +166,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         } else {
             header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
             exit();
-        }  
+        }
     } else if (isset($_POST['accept-refund'])){
         $activityId = $_GET['id'];
         $participantId = $_POST['participant_id'];
 
         updateRefundRequest($pdo, $participantId, $activityId);
+        $_SESSION['success_message'] = "User successfully refunded.";
         header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
         exit();
-    }   else if (isset($_POST['save-button'])) {
+    } else if (isset($_POST['save-button'])) {
         $data = [
             'activity_name'     => $_POST['activity_name'],
             'description'       => $_POST['description'],
@@ -164,9 +189,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         ];
     
         $result = updateActivityDetails($pdo, $userId, $activityId, $data);
-    
         header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
         exit();
+        
     }
 }
 ?>

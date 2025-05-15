@@ -323,17 +323,20 @@ function updateParticipantStatus ($pdo, $participantId, $activityId) {
     return $stmt->execute([$participantId, $activityId]);
 }
 
-function getNotificationCancelled($pdo, $participantId) {
-    $stmt = $pdo->prepare("
-        SELECT p.id, p.participant_id, j.firstName, j.lastName, a.id, a.activity_name as activity_name
-        FROM participants p
-        JOIN account_joiner j ON p.participant_id = j.id 
-        JOIN activities a ON p.activity_id = a.id 
-        WHERE p.participant_id = ? AND p.notified = 'cancel'
-    ");
+function getNotificationJoiner(PDO $pdo, int $participantId): array {
+    $sql = "
+        SELECT *
+        FROM notification_joiner
+        WHERE participant_id = ?
+        ORDER BY created_at DESC
+    ";
+
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([$participantId]);
+
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
 
 function updateParticipantNumber($pdo, $activityId){
     $stmt = $pdo->prepare("UPDATE activities SET current_participants = current_participants + 1 WHERE id = ?");
@@ -570,7 +573,7 @@ function updateActivityStatus($pdo, $activityId) {
     return $result;
 }
 function getActiveActivites($pdo, $participantId) {
-    $stmt = $pdo->prepare("SELECT activity_id FROM participants WHERE participant_id = ? AND status = 'active'");
+    $stmt = $pdo->prepare("SELECT activity_id FROM participants WHERE participant_id = ? AND status = 'active' AND refund = !'done'");
     $stmt->execute([$participantId]);
     return $stmt->fetchAll(PDO::FETCH_COLUMN);
 }
@@ -700,7 +703,7 @@ function setRefundYes($pdo, $userId, $activityId) {
     $stmt->execute([$userId, $activityId]);
 
     $result['success'] = true;
-    $result['message'] = 'Refund successfully updated to yes.';
+    $result['message'] = 'Refund request successfully sent.';
 
     return $result;
 }
@@ -735,6 +738,16 @@ function updateActivityDetails($pdo, $userId, $activityId, $data) {
     ];
 
     try {
+
+        $activityDate = new DateTime($data['date']);
+        $today = new DateTime();
+        $today->setTime(0, 0);
+
+        if ($activityDate < $today) {
+            $_SESSION['error_message'] = 'Activity date cannot be set in past date.';
+            return $result;
+        }
+
         $sql = "UPDATE activities SET 
                     activity_name = :activity_name,
                     description = :description,

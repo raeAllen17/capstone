@@ -64,19 +64,21 @@ nav.scrolled {
     font-size: 1.2em;
 }
 
-
-input::placeholder {
-    color: rgb(255, 255, 255);
-}
-
 .signup_button {
-    position: relative;
     border-style: none;
     font-size: 1.8vh;
     cursor: pointer;
     padding: 10px 20px;
     border-radius: 10px;
-    background-color: transparent;
+    background: green;
+    color: white;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.signup_button:hover {
+    background: linear-gradient(to bottom, #4caf50, #2e7d32);
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .nav_right {

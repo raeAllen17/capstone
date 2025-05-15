@@ -33,6 +33,21 @@
 
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
     <link rel="stylesheet" type="text/css" href="../css/landing_page.css">
+
+    <style>
+        #login-link {
+            font-size: 16px;
+            text-decoration: none; 
+            padding: 0.5vw 1vw; 
+            border-radius: 10px;
+            color: black;
+            font-weight: bold;
+        }
+        #login-link:hover {
+            background: linear-gradient(to bottom, #4caf50, #2e7d32);
+            color: whitesmoke;
+        }
+    </style>
 </head>
 <body>
     <!-- NAVBAR START -->
@@ -48,7 +63,7 @@
             </ul>
         </div>
         <div class="nav_right">   
-            <input type="button" class = "signup_button" value="Sign Up" onclick="openModal('modal_selection', event)">
+            <a href="login_page.php" id="login-link">LOGIN</a>
         </div>          
     </nav>  
     <!-- NAVBAR END -->
@@ -62,7 +77,7 @@
             </div>
 
             <div class="hero_button">
-                <input type="button" class = "learnmore_button" value = "Learn More">
+                <input type="button" class = "signup_button" value="Get Started" onclick="openModal('modal_selection', event)">
             </div>
         </div>
 

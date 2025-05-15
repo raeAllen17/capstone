@@ -41,6 +41,17 @@ if (!isset($_SESSION['email'])) {
     }
 }
 
+$errorMessage = "";
+$successMessage = "";
+if (isset($_SESSION['error_message']) && $_SESSION['error_message'] !== "") {
+    $errorMessage = $_SESSION['error_message'];
+    unset($_SESSION['error_message']); 
+}
+if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") {
+    $successMessage = $_SESSION['success_message'];
+    unset($_SESSION['success_message']); 
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -121,6 +132,8 @@ if (!isset($_SESSION['email'])) {
 </head>
 
 <body>
+<span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
+<span id="successMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: green; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $successMessage; ?></span>    
     <div class="background"></div> 
         <div class="container">
             <h2>VERIFICATION</h2>
@@ -135,6 +148,27 @@ if (!isset($_SESSION['email'])) {
                 <button id="resendotp_button" type="submit" name="resend_otp">Resend OTP</button>
             </form>
         </div>
-    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+        var errorMsg = document.getElementById("errorMessage");
+        var successMsg = document.getElementById("successMessage");
+
+        if (errorMsg.innerHTML.trim() !== "") {
+            errorMsg.style.display = "flex";
+            setTimeout(() => {
+            errorMsg.style.display = "none";
+            errorMsg.innerHTML = "";
+        }, 2000);
+        }
+
+        if (successMsg.innerHTML.trim() !== "") {
+            successMsg.style.display = "flex";
+            setTimeout(() => {
+            successMsg.style.display = "none";
+            successMsg.innerHTML = ""; 
+        }, 2000);
+        }
+        });
+    </script>
 </body>
 </html>

@@ -4,6 +4,17 @@ require_once 'includes/dbCon.php';
 require_once 'includes/formHandler.php';
 require_once 'includes/activity_store.php';
 
+$errorMessage = "";
+$successMessage = "";
+if (isset($_SESSION['error_message']) && $_SESSION['error_message'] !== "") {
+    $errorMessage = $_SESSION['error_message'];
+    unset($_SESSION['error_message']); 
+}
+if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") {
+    $successMessage = $_SESSION['success_message'];
+    unset($_SESSION['success_message']); 
+}
+
 if(isset($_SESSION['id'])){
     $userId = $_SESSION['id']; 
     $userData = getJoinerUserdata($pdo, $userId);
@@ -14,22 +25,9 @@ if(isset($_SESSION['id'])){
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST"){
-    if (isset($_POST['check']) && isset($_POST['participant_id']) && isset($_POST['activity_id'])) {
-        if (isset($_POST['participant_id'])) {
-            $participantId = $_POST['participant_id'];
-            $activityId = $_POST['activity_id'];
-            $orgId = $_POST['org_id'];
-            updateParticipantStatus($pdo, $participantId, $activityId);
-            updateParticipantNumber($pdo, $activityId);
-            insertNotification($pdo, $activityId, $orgId, $participantId);
-            header("Location: " . $_SERVER['PHP_SELF']);
-            exit();
-        }
-    }
+    
 }
-
-$participants = getNotification($pdo, $userId);
-$cancelledNotification = getNotificationCancelled($pdo, $userId)
+$cancelledNotification = getNotificationJoiner($pdo, $userId)
 
 ?>
 
@@ -74,7 +72,10 @@ $cancelledNotification = getNotificationCancelled($pdo, $userId)
     </style>
 </head>
 <body style=" height: 100vh;">
-    <nav id="nav">
+<span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
+<span id="successMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: green; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $successMessage; ?></span>    
+
+    <nav id="nav" style="background-color: white;">
             <div class="nav_left" style=" positition: relative;">
                 <ul class = "navbar">
                     <li><input type="button" class="logo"></li>
@@ -85,66 +86,28 @@ $cancelledNotification = getNotificationCancelled($pdo, $userId)
                     <li><a href="joiner_notification.php" id="notification-nav">Notification</a></li>
                 </ul>
             </div>
-            <div class="nav_right" id="nav_right_click" onclick="window.location.href='walapa.php';">           
+            <div class="nav_right" id="nav_right_click" onclick="window.location.href='joiner_account.php';">           
                 <img src="../imgs/defaultuser.png" style="height: 30px; width: 30px;"> 
                 <span style="display:flex; align-items:center;"><?php echo htmlspecialchars($joinerName); ?></span>
             </div>
     </nav>
 
-    <div style=" padding-top: 7vh; height: 100%; width:  100%; display: flex; flex-direction: column;">
-        <div style=" height: 100%; width: 100%; padding: 2vw; display: flex; justify-content: center; flex-direction: column; align-items: center;">
-            <h1>Request Notifications</h1>
-            <div style=" height: 300px; width: 600px; border: 2px solid black; border-radius: 20px; padding: 2vw;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Activity Name</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($participants && count($participants) > 0): ?>
-                            <?php foreach ($participants as $participant): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($participant['activity_name'])?></td>
-                                    <td style=" padding-left: 10%;">
-                                        <form action="" method="POST" enctype="multipart/form-data">
-                                            <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($participant['participant_id']); ?>">
-                                            <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($participant['activity_id']); ?>">
-                                            <input type="hidden" name="org_id" value="<?php echo htmlspecialchars($participant['org_id']); ?>">
-                                            <button class="button-buttons" name="check" style="background: url('../imgs/icon_check.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> 
-                                        </form>       
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="2">No participants found.</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div style=" height: 100%; width: 100%; padding: 2vw; display: flex; justify-content: center; flex-direction: column; align-items: center;">
-            <h1>Cancellation Notifications</h1>
-            <div style=" height: 300px; width: 600px; border: 2px solid black; border-radius: 20px; padding: 2vw;">
+    <div style=" padding-top: 7vh; height: 100%; width: 100%; display: flex; flex-direction: column; background: linear-gradient(to right, #FFE4C4, #F9D6A5, #F1E1C6, #E8E5D7);">
+        <div style=" height: 100%; width: 100%; display: flex; padding-top: 2vw; flex-direction: column; align-items: center;">
+            <h1 style="width: 30%; text-align: left;">Notifications</h1>
+            <div style=" height: 300px; width: 600px; box-shadow: 0 4px 12px rgba(100, 149, 237, 0.3); border-radius: 20px; padding: 2vw; background-color: white;">
             <table>
-                    <thead>
-                        <tr>
-                            <th>Activity Name</th>
-                        </tr>
-                    </thead>
                     <tbody>
                         <?php if ($cancelledNotification && count($cancelledNotification) > 0): ?>
                             <?php foreach ($cancelledNotification as $cancelledNotifs): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($cancelledNotifs['activity_name'])?></td>
-                                    <td><p>Kindly resend your registration.</p></td>
+                                    <td><?php echo ($cancelledNotifs['message'])?></td>
+                                    <td><strong><?php echo date('H:i', strtotime($cancelledNotifs['created_at'])) ?></strong></td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="2">No participants found.</td>
+                                <td colspan="2">No notifications found.</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -152,5 +115,28 @@ $cancelledNotification = getNotificationCancelled($pdo, $userId)
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+        var errorMsg = document.getElementById("errorMessage");
+        var successMsg = document.getElementById("successMessage");
+
+        if (errorMsg.innerHTML.trim() !== "") {
+            errorMsg.style.display = "flex";
+            setTimeout(() => {
+            errorMsg.style.display = "none";
+            errorMsg.innerHTML = "";
+        }, 2000);
+        }
+
+        if (successMsg.innerHTML.trim() !== "") {
+            successMsg.style.display = "flex";
+            setTimeout(() => {
+            successMsg.style.display = "none";
+            successMsg.innerHTML = ""; 
+        }, 2000);
+        }
+        });
+    </script>
 </body>
 </html>

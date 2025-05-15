@@ -95,15 +95,19 @@ $data = displayOrgActivities($pdo, $userId);
             border: 3px solid transparent;
         }
         #calendar-img{
-            transition: transform 0.2s ease;
+            background-color: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         #calendar-img:hover{
             transform: scale(1.2);
             cursor: pointer;
+            background-color: none;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
     </style>
 </head>
-<body style="background-color: white; height: 100vh; width: 100%;">
+<body style="background-color: white; height: 100vh; width: 100%; background: linear-gradient(120deg, #355C4C, #6DB28B, #CDECC9);">
 
     <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
     <span id="successMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: green; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $successMessage; ?></span>    
@@ -115,7 +119,6 @@ $data = displayOrgActivities($pdo, $userId);
                 <li style=" border-bottom: 2px solid green;"><a href="">Home</a></li>
                 <li><a href="org_createAct.php">Activity</a></li>
                 <li><a href="org_forumPage.php">Forum</a></li>
-                <li><a href="org_marketplace.php">Marketplace</a></li>
                 <li><a href="org_notification.php">Notification</a></li>
             </ul>
         </div>
@@ -128,15 +131,15 @@ $data = displayOrgActivities($pdo, $userId);
     <div class="container" style=" padding-top: 7vh; height:100%; width: 100%; display: flex; justify-content: center; flex-grow:1 ;">
         <div class="container-wrap" style="height: auto; width: 100%; padding: 3vh; display: flex; flex-direction: column; align-items: center; gap: 2vw;">
             <div style=" height: auto; width: 100%; text-align: center;">
-                <h1>Hi <?php echo htmlspecialchars($orgname)?>, here to create an activity?</h1><br>
-                <p><strong>Go to actvity page -></strong> <a href="org_createAct.php" class="link-button">Create Activity</a></p>
+                <h1 style="color: white;">Hi <?php echo htmlspecialchars($orgname)?>, here to create an activity?</h1><br>
+                <p><strong style="color: white;">Go to actvity page -></strong> <a href="org_createAct.php" class="link-button">Create Activity</a></p>
             </div>
 
             <div style="width: 70%; height: 30vw; box-shadow: 1px 2px 6px 0.1px; padding: 2vw; border-radius: 20px; display: flex; flex-direction: column; gap: 1vw; background-color: #A9BA9D;">
                 <div style=" display: flex; justify-content:space-between; width: 100%;">
                     <h1 style=" color: azure;">Activities to Look Forward</h1>
                     <div style=" padding: 0vw 2vw;">
-                        <a href="orgCalendarModule.php">
+                        <a href="orgCalendarModule.php" id="calendar-button">
                             <img id="calendar-img" src="../imgs/icon_calendar.png" alt="Calendar" style="height: 50px; width: 50px;">
                         </a>
                     </div>  

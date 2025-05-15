@@ -79,14 +79,14 @@ if(isset($_SESSION['id'])){
                     <li><a href="joiner_notification.php" >Notification</a></li>
                 </ul>
             </div>
-            <div class="nav_right" id="nav_right_click" onclick="window.location.href='walapa.php';">  
+            <div class="nav_right" id="nav_right_click" onclick="window.location.href='joiner_account.php';">  
                 <img src="../imgs/defaultuser.png" style="height: 30px; width: 30px;"> 
                 <span style="display:flex; align-items:center;"><?php echo htmlspecialchars($joinerName); ?></span>
             </div>          
     </nav> 
 
-    <div class="container" style=" padding-top: 7vh; display: grid; place-items: center;height: 100%;">
-        <div style=" padding: 40px; height: 100%; background-color: lightslategray ; width: 100%;">
+    <div class="container" style=" padding-top: 7vh; display: grid; place-items: center;height: 100%; ">
+        <div style=" padding: 40px; height: 100%; background-color: lightslategray ; width: 100%; background: linear-gradient(to right, #A8D5BA, #B7E0A7, #C4E1D4, #F0E5D8);">
             <div style="width: 100%; display: grid; place-content: center;">
                 <h1 style=" font-size: 2.8em; margin-bottom: 10px; color: azure     ;">Select and join the <br> adventure now!</h1>
                 <div>

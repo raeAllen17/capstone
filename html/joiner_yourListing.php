@@ -232,7 +232,7 @@ $userItems = getUserListing($pdo, $userId);
                     <li><a href="joiner_notification.php" >Notification</a></li>
                 </ul>
             </div>
-            <div class="nav_right" id="nav_right_click" onclick="window.location.href='walapa.php';">  
+            <div class="nav_right" id="nav_right_click" onclick="window.location.href='joiner_account.php';">  
                 <img src="../imgs/defaultuser.png" style="height: 30px; width: 30px;"> 
                 <span style="display:flex; align-items:center;"><?php echo htmlspecialchars($joinerName); ?></span>
             </div>          

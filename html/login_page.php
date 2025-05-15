@@ -102,7 +102,7 @@ if (isset($_POST["submit"])) {
         .button_arrow {
             height: 20px;
             width: 20px;
-            background: url('http://localhost/JOYn/JOYn/imgs/icon_backarrow.png') no-repeat center center;
+            background: url('../imgs/icon_backarrow.png') no-repeat center center;
             background-size: contain;
             border:none;
             cursor: pointer;
@@ -120,11 +120,6 @@ if (isset($_POST["submit"])) {
         <div class="nav_left">
             <ul class="navbar">
                 <li><input type="button" class="logo"></li>
-                <li><a href="">Home</a></li>
-                <li><a href="">Activity</a></li>
-                <li><a href="">Forum</a></li>
-                <li><a href="">Marketplace</a></li>
-                <li><a href="">Notification</a></li>
             </ul>
         </div>
         <div class="nav_right">   

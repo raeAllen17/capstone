@@ -12,24 +12,43 @@ try {
     $pdo = new PDO('mysql:host=localhost;dbname=capstone', 'root', '');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $orgId = $_SESSION['id'];
+    $userId = $_SESSION['id'];
 
-    $sql = "SELECT id, activity_name AS title, date AS start, status 
-            FROM activities 
-            WHERE org_id = :org_id";
-    
+    $sql = "
+        SELECT 
+            a.id,
+            a.activity_name AS title,
+            a.date AS start,
+            p.status
+        FROM 
+            activities a
+        LEFT JOIN 
+            participants p ON a.id = p.activity_id AND p.participant_id = :user_id
+    ";
+
     $stmt = $pdo->prepare($sql);
-    $stmt->execute(['org_id' => $orgId]);
+    $stmt->execute(['user_id' => $userId]);
+
     $rawEvents = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $events = [];
     foreach ($rawEvents as $event) {
+        $color = null;
+        $clickable = true;
+
+        if ($event['status'] === 'done') {
+            $color = 'green';
+            $clickable = false;
+        } elseif ($event['status'] === 'pending') {
+            $color = 'blue';
+        }
+
         $events[] = [
             'id' => $event['id'],
             'title' => $event['title'],
             'start' => $event['start'],
-            'color' => $event['status'] === 'done' ? 'green' : 'skyblue', 
-            'clickable' => $event['status'] !== 'done'
+            'color' => $color,
+            'clickable' => $clickable
         ];
     }
 

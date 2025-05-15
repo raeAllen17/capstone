@@ -29,7 +29,7 @@ $notifications = getNotificationOrg($pdo, $userId);
 
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
 </head>
-<body>
+<body style=" min-height: 100vh; background: linear-gradient(145deg, #FAD0C4, #FDFCFB, #B8E1FF);">
     <nav id="nav" style="background-color: white;">
         <div class="nav_left">
             <ul class="navbar">
@@ -37,7 +37,6 @@ $notifications = getNotificationOrg($pdo, $userId);
                 <li><a href="org_homePage.php">Home</a></li>
                 <li><a href="org_createAct.php">Activity</a></li>
                 <li><a href="org_forumPage.php">Forum</a></li>
-                <li><a href="org_marketplace.php">Marketplace</a></li>
                 <li  style=" border-bottom: 2px solid green;"><a href="org_notification.php">Notification</a></li>
             </ul>
         </div>
@@ -47,14 +46,14 @@ $notifications = getNotificationOrg($pdo, $userId);
         </div>         
     </nav>
 
-    <div style=" padding-top: 7vh; height: 100%; width:  100%; display: flex; flex-direction: column;">
+    <div style=" padding-top: 7vh; height: auto; width:  100%; display: flex; flex-direction: column;">
         <div style=" height: 100%; width: 100%; padding: 2vw; display: flex; justify-content: center; flex-direction: column; align-items: center;">
             <h1>Notifications</h1>
-            <div style=" height: 300px; width: 600px; border: 2px solid black; border-radius: 20px; padding: 2vw;">
-                <div>
+            <div style=" height: auto; width: 600px; border: 2px solid black; border-radius: 20px; overflow: hidden;">
+                <div style="display: flex; flex-direction: column-reverse; margin: 0.5vw;">
                     <?php if ($notifications && count($notifications) > 0): ?>
                         <?php foreach ($notifications as $notification): ?>
-                            <div style=" display: flex; justify-content: space-between; width: 100%; border-bottom: 1px solid black; padding-bottom: 1vh; margin-top: 1vh;">
+                            <div style="display: flex; justify-content: space-between; width: 100%; padding: 0.5vw 1vw; border-bottom: 1px solid black; background-color: white; border-radius: 10px;">
                                 <p><?php echo htmlspecialchars($notification['message'])?></p>
                                 <p><strong><?php echo date('H:i:s', strtotime($notification['created_at'])); ?></strong></p>
                             </div> 

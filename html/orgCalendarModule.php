@@ -12,13 +12,9 @@ if (!isset($_SESSION['id'])) {
   <meta charset="utf-8" />
   <title>My Calendar</title>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="../css/calendar.css">
   <style>
-    #calendar {
-      max-width: 100%;
-      max-height: 100vh;
-      padding: 10px;
-      margin: 0 auto;
-    }
+    
   </style>
 </head>
 <body style="margin: 0; padding: 0;">

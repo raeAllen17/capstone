@@ -146,7 +146,7 @@ if (isset($_SESSION["id"])) {
     </style>
 
 </head>
-<body style=" height: 100vh; background-color: lightgrey; margin: 0; padding: 0;">
+<body style=" height: 100vh; background-color: lightgrey; margin: 0; padding: 0; background: linear-gradient(120deg, #B8E1FF, #FFD1FF, #FFFFFF);">
 
     <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); 
     height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: 
@@ -163,7 +163,6 @@ if (isset($_SESSION["id"])) {
                 <li><a href="org_homePage.php">Home</a></li>
                 <li style=" border-bottom: 2px solid green;"><a href="">Activity</a></li>
                 <li><a href="org_forumPage.php">Forum</a></li>
-                <li><a href="org_marketplace.php">Marketplace</a></li>
                 <li><a href="org_notification.php">Notification</a></li>
             </ul>
         </div>
@@ -182,7 +181,7 @@ if (isset($_SESSION["id"])) {
                     <div class="left" style="display: flex; flex-direction: column; justify-content: space-between; gap: 20px;">
                         <div>
                             <p>Activity Name</p>
-                            <input type="text" class="input_fields" name="activity_name" required>
+                            <input type="text" class="input_fields" name="activity_name" required placeholder="Enter name here">
                         </div>
                         <div style="width:100%; position: relative;">
                             <p>Images</p>
@@ -201,14 +200,14 @@ if (isset($_SESSION["id"])) {
                         <div style="width: 100%;">
                             <p>Description</p>
                             <span>
-                                <textarea style="width: 100%; border: 2px solid black; border-radius: 10px; resize:none; padding: 20px;" name="description" id="" cols="30" rows="10" required></textarea>
+                                <textarea style="width: 100%; border: 2px solid black; border-radius: 10px; resize:none; padding: 20px;" name="description" id="" cols="30" rows="10" required placeholder="Enter activity details here"></textarea>
                             </span>
                         </div>
                         <div style=" display: flex; justify-content: space-between; gap: 30px;">
                             <div style="display: flex; flex-direction: column; gap: 20px;">
                                 <div>
                                     <p>Location</p>
-                                    <input type="text" class="input_fields" name="location" required>
+                                    <input type="text" class="input_fields" name="location" required placeholder="Diwa, Pilar, Bataan">
                                 </div>
                                 <div>
                                     <p>Date</p>
@@ -217,7 +216,7 @@ if (isset($_SESSION["id"])) {
                                 <div>
                                 <p>Distance</p>
                                     <div style="position: relative;">
-                                        <input type="number" step="0.1" id="distance_value" style="padding-right: 45px; width: 100%;" class="input_fields" required>
+                                        <input type="number" step="0.1" id="distance_value" style="padding-right: 45px; width: 100%;" class="input_fields" required placeholder="Trail or Location Distance">
                                         <select id="distance_unit" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: transparent; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
                                             <option value="km">km</option>
                                             <option value="miles">miles</option>
@@ -228,7 +227,7 @@ if (isset($_SESSION["id"])) {
                                 <div>
                                     <p>Price</p>
                                     <div style="position: relative;">
-                                        <input type="number" step="0.1" id="price_value" style="padding-right: 45px; width: 100%;" class="input_fields" required>
+                                        <input type="number" step="0.1" id="price_value" style="padding-right: 45px; width: 100%;" class="input_fields" required placeholder="Input the whole price for the event">
                                         <select id="currency_symbol" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: transparent; -webkit-appearance: none; -moz-appearance: none; appearance: none;">
                                             <option value="PHP">₱</option>
                                         </select>
@@ -250,7 +249,7 @@ if (isset($_SESSION["id"])) {
                                 </div>
                                 <div>
                                     <p>Participants</p>
-                                    <input type="number" class="input_fields" name="participants" required>
+                                    <input type="number" class="input_fields" name="participants" required placeholder="Input max number of participants">
                                 </div>
                                 <div>
                                     <p>Pickup Points</p>
