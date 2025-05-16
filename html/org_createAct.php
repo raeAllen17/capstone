@@ -146,7 +146,7 @@ if (isset($_SESSION["id"])) {
     </style>
 
 </head>
-<body style=" height: 100vh; background-color: lightgrey; margin: 0; padding: 0; background: linear-gradient(120deg, #B8E1FF, #FFD1FF, #FFFFFF);">
+<body style=" height: 100vh; background-color: lightgrey; margin: 0; padding: 0;  background: linear-gradient(120deg, #355C4C, #6DB28B, #CDECC9); ">
 
     <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); 
     height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: 
@@ -175,7 +175,7 @@ if (isset($_SESSION["id"])) {
 
     <div class="container" style="padding-top: 7vh;display: flex; justify-content: center; height: 100vh; position: relative;">
         <div class="content" style=" padding-top:2vh; height: 100%;">
-            <h1 style=" margin-bottom: 10px; font-size: 2.4em;">Create your own Activity and feel the Thrill!</h1>
+            <h1 style=" margin-bottom: 10px; font-size: 2.4em; color: whitesmoke; margin-bottom: 0.7vw; ">Create your own Activity and feel the Thrill!</h1>
             <form action="" method="POST" enctype="multipart/form-data">
                 <div style="display: flex; justify-content: space-between; align-items: baseline; padding: 30px; border: 2px solid black; border-radius: 20px; width: 1200px; background-color: white; max-height: 100vh;">
                     <div class="left" style="display: flex; flex-direction: column; justify-content: space-between; gap: 20px;">
@@ -264,7 +264,7 @@ if (isset($_SESSION["id"])) {
                                     <input type="hidden" name="pickup_locations" id="pickup_locations_hidden">
                                 </div>
                                 <div style="display: flex; width: 100%; justify-content: flex-end; ">
-                                    <button type="button" name="cancel" class="blue_buttons" onclick="window.location.href='org_createAct.php'">Cancel</button>
+                                    <button type="reset" name="cancel" class="blue_buttons" style="background: linear-gradient(to right, #ff6b6b, #ffa07a);">Cancel</button>
                                     <button type="submit" name="submit" class="blue_buttons">Submit</button>
                                 </div>
                             </div>

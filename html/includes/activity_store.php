@@ -573,7 +573,7 @@ function updateActivityStatus($pdo, $activityId) {
     return $result;
 }
 function getActiveActivites($pdo, $participantId) {
-    $stmt = $pdo->prepare("SELECT activity_id FROM participants WHERE participant_id = ? AND status = 'active' AND refund = !'done'");
+    $stmt = $pdo->prepare("SELECT activity_id FROM participants WHERE participant_id = ? AND status = 'active' AND refund = 'no'");
     $stmt->execute([$participantId]);
     return $stmt->fetchAll(PDO::FETCH_COLUMN);
 }
@@ -608,10 +608,12 @@ function rateActivity($pdo, $participantId, $orgId, $activityId, $message, $rati
     $count = $stmt->fetchColumn();
 
     if ($count > 0) {
+        $_SESSION['error_message']="You already rated this activity!";
         return "You have already submitted a comment for this activity.";
     } else {
         $stmt = $pdo->prepare("INSERT INTO forum (org_id, activity_id, participant_id, message, rating, participant_name) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$orgId, $activityId, $participantId, $message, $rating, $participantName]);
+        $_SESSION['success_message']="Thank you for rating the activity!";
         return "Your comment has been submitted successfully.";
     }
 }
@@ -645,10 +647,12 @@ function getForumEntriesByActivityId($pdo, $activityId) {
         'data' => []
     ];
 
+    // SQL query to fetch forum entries with participant information (avatar, name)
     $stmt = $pdo->prepare("
-        SELECT message, rating, participant_name
-        FROM forum
-        WHERE activity_id = :activityId
+        SELECT f.message, f.rating, f.participant_name, f.participant_id, aj.avatar 
+        FROM forum f
+        LEFT JOIN account_joiner aj ON f.participant_id = aj.id
+        WHERE f.activity_id = :activityId
     ");
     $stmt->execute(['activityId' => $activityId]);
     $forumEntries = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -661,6 +665,7 @@ function getForumEntriesByActivityId($pdo, $activityId) {
     return $result;
 }
 
+
 function getCurrentActivities($pdo, $userId) {
     $result = [
         'success' => false,
@@ -671,7 +676,10 @@ function getCurrentActivities($pdo, $userId) {
         SELECT activities.id, activities.activity_name
         FROM participants
         JOIN activities ON participants.activity_id = activities.id
-        WHERE participants.status = 'active' AND participants.participant_id = ? AND refund = 'no'
+        WHERE participants.status = 'active' 
+            AND participants.participant_id = ? 
+            AND refund = 'no'
+            AND activities.status != 'done'
     ");
     $stmt->execute([$userId]);
     $activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -1064,6 +1072,26 @@ function getTradeStatus($pdo, $userId) {
     $stmt->execute(['userId' => $userId]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+function getRatedActivities($pdo, $userId) {
+    $stmt = $pdo->prepare("
+        SELECT 
+            f.participant_id, 
+            f.participant_name, 
+            f.activity_id, 
+            a.activity_name,
+            f.rating
+        FROM forum f
+        INNER JOIN activities a ON f.activity_id = a.id
+        WHERE f.participant_id = :userId
+    ");
+    
+    $stmt->execute(['userId' => $userId]);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    return $results;
+}
+
 
 
 

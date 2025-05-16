@@ -99,7 +99,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
             
             $result = notifyParticipant($pdo, $participantId, $activityId);
             if ($result['success']) {
-                $_SESSION['success_message'] = $result['message'];
+                $_SESSION['success_message'] = "Participant notified.";
+
+                //insert notification
+                $stmt = $pdo->prepare("SELECT activity_name FROM activities WHERE id = ?");
+                $stmt->execute([$activityId]);
+                $activity = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($activity) {
+                    $activityName = $activity['activity_name'];
+                    $message = "<b>$activityName</b> : A slot has opened! You may now resend your proof of reservation.";
+                
+                    $stmt = $pdo->prepare("INSERT INTO notification_joiner (participant_id, message) VALUES (?, ?)");
+                    $stmt->execute([$participantId, $message]);
+                
+                    $_SESSION['success_message'] = "Notice successful.";
+                } else {
+                    $_SESSION['error_message'] = "Activity not found.";
+                }
+
+                header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
+                exit();
             } else {
                 $_SESSION['error_message'] = $result['message'];
             }
@@ -170,6 +189,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     } else if (isset($_POST['accept-refund'])){
         $activityId = $_GET['id'];
         $participantId = $_POST['participant_id'];
+
+        //insert notification
+        $stmt = $pdo->prepare("SELECT activity_name FROM activities WHERE id = ?");
+        $stmt->execute([$activityId]);
+        $activity = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($activity) {
+            $activityName = $activity['activity_name'];
+            $message = " Your refund request on <b>$activityName</b> has been successful.";
+        
+            $stmt = $pdo->prepare("INSERT INTO notification_joiner (participant_id, message) VALUES (?, ?)");
+            $stmt->execute([$participantId, $message]);
+        
+            $_SESSION['success_message'] = "Notice successful.";
+        } else {
+            $_SESSION['error_message'] = "Activity not found.";
+        }
 
         updateRefundRequest($pdo, $participantId, $activityId);
         $_SESSION['success_message'] = "User successfully refunded.";
@@ -270,7 +305,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 
     </style>
 </head>
-<body style="background-color: white; height: 100vh; width: 100%;">
+<body style="background-color: white; min-height: 100vh; width: 100%; background: linear-gradient(120deg, #B8E1FF, #FFD1FF, #FFFFFF);">
     <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
     <span id="successMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: green; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $successMessage; ?></span>    
     
@@ -488,7 +523,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                                             <form action="" method="POST" enctype="multipart/form-data">
                                                 <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($waitlist['participant_id']); ?>">
                                                 <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($activityId); ?>">
-                                                <button class="button-buttons" name="remove" style="background: url('../imgs/icon_cross.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button>
                                                 <button class="button-buttons" name="notify" style="background: url('../imgs/icon_check.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> 
                                             </form>       
                                         </td>

@@ -388,3 +388,5 @@ function getJoinerUserData($pdo, $userId) {
     $userData = $stmt->fetch(PDO::FETCH_ASSOC);
     return $userData;
 }
+
+

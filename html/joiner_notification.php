@@ -94,8 +94,8 @@ $cancelledNotification = getNotificationJoiner($pdo, $userId)
 
     <div style=" padding-top: 7vh; height: 100%; width: 100%; display: flex; flex-direction: column; background: linear-gradient(to right, #FFE4C4, #F9D6A5, #F1E1C6, #E8E5D7);">
         <div style=" height: 100%; width: 100%; display: flex; padding-top: 2vw; flex-direction: column; align-items: center;">
-            <h1 style="width: 30%; text-align: left;">Notifications</h1>
-            <div style=" height: 300px; width: 600px; box-shadow: 0 4px 12px rgba(100, 149, 237, 0.3); border-radius: 20px; padding: 2vw; background-color: white;">
+            <h1 style="width: 35%; text-align: left; margin-bottom: 1vw;">Notifications</h1>
+            <div style=" min-height: 300px; width: 700px; box-shadow: 0 4px 12px rgba(100, 149, 237, 0.3); border-radius: 20px; padding: 2vw; background-color: white;">
             <table>
                     <tbody>
                         <?php if ($cancelledNotification && count($cancelledNotification) > 0): ?>

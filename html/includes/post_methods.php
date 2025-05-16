@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             $_SESSION['error_message'] = "Failed to update your request: " . htmlspecialchars($result['message']);
         }
-    } else if ($currentStatus === 'waitlist' && $notified = 'cancel') {
+    } else if ($currentStatus === 'waitlist' && $notified === 'no') {
         $_SESSION['error_message'] = "Registration already pending, please wait for confirmation notification.";
     }elseif ($currentStatus === 'waitlist') {
         $result = actRegisUpdate($pdo, $userData, $_FILES['proof-image']);

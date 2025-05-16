@@ -45,8 +45,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $participantName = $userData['firstName'];
         $message = $_POST['message'];
         $rating = $_POST['rating'];
-
         rateActivity($pdo, $userId, $orgId, $activityId, $message, $rating, $participantName);
+        header("location: joiner_activityPage.php");
+        exit();
     } else if (isset($_POST['refund'])){
         $activityId = $_POST['activityId'];
         $result = setRefundYes($pdo, $userId, $activityId);
@@ -175,14 +176,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
             </div>
             <div style=" height: auto; width: 100%;">
                 <h1 style="width: 30%; text-align: left;">Confirmations</h1>
-                <div style=" min-height: 300px; width: 600px; box-shadow: 0 4px 12px rgba(100, 149, 237, 0.3); border-radius: 20px; background-color: whitesmoke;">
+                <div style=" min-height: 300px; width: 600px; box-shadow: 0 4px 12px rgba(100, 149, 237, 0.3); border-radius: 20px; background-color: whitesmoke; padding: 1vw;">
                     <table>
                         <tbody>
                             <?php if ($participants && count($participants) > 0): ?>
                                 <?php foreach ($participants as $participant): ?>
                                     <tr>
                                         <td><?php echo htmlspecialchars($participant['activity_name'])?></td>
-                                        <td style=" padding-left: 10%;">
+                                        <td style=" padding-left: 10%; ">
                                             <form action="" method="POST" enctype="multipart/form-data">
                                                 <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($participant['participant_id']); ?>">
                                                 <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($participant['activity_id']); ?>">

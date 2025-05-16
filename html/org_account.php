@@ -7,6 +7,14 @@ require_once 'includes/activity_store.php';
 if (isset($_SESSION['id'])) {
     $userId = $_SESSION['id']; 
     $userData = getUserdata($pdo, $userId);
+
+    if ($userData && $userData['avatar']) {
+        $mimeType = 'image/jpeg';
+        $base64Image = base64_encode($userData['avatar']);
+        $avatarUrl = "data:$mimeType;base64,$base64Image";
+    } else {
+        $avatarUrl = "../imgs/defaultuser.png";
+    }
     $orgname = $userData['orgname'];
 } else {
     session_unset();
@@ -51,7 +59,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['qr_code_image'])) {
     header("Location: org_account.php");
     exit();
 }
-
 
 //retrieve images
 $qrCodeData = displayQRCodes($pdo, $userId);
@@ -187,11 +194,17 @@ $qrCodeData = displayQRCodes($pdo, $userId);
             <!--  the button on the right of the cover -->
             <span id="div-button" style="position: absolute; bottom: 10px; right: 10px; display: flex; align-items:center; padding: 10px; background-color: grey; color: white; border-radius: 10px; gap: 10px;"><img src="../imgs/icon_image.png" alt="" style=" height: 30px; width: 30px;"><p>Add cover photo</p></span>      
             <!--  the profile image on the left -->
-            <div id="div-image" style="position: absolute; bottom: -45%; left: 3%; background-color: lightcoral; height:11vw; width:11vw; border-radius: 50%; display: grid; place-content: center;">
-                <button id="profileImage" style="cursor: pointer;background-image: url('../imgs/defaultuser.png'); height:10vw; width: 10vw; background-position: center; background-size: cover; border-radius: 50%; background-color:  transparent; border: none;" onclick="document.getElementById('profileInput').click();">
-                </button>
-                <input id="profileInput" type="file" style="display: none;" accept="image/*" onchange="updateImage(this, 'profileImage')">
-            </div>  
+            <form id="uploadForm" action="../html/includes/upload_avatar.php" method="POST" enctype="multipart/form-data">
+                <div id="div-image" style="position: absolute; bottom: -45%; left: 3%; background-color: lightcoral; height:11vw; width:11vw; border-radius: 50%; display: grid; place-content: center;">
+                    <button type="button" id="profileImage" 
+                        style="cursor: pointer; background-image: url('<?php echo $avatarUrl; ?>'); 
+                            height:10vw; width: 10vw; background-position: center; background-size: cover; 
+                            border-radius: 50%; background-color: transparent; border: none;" 
+                        onclick="document.getElementById('profileInput').click();">
+                    </button>
+                    <input id="profileInput" name="avatar" type="file" style="display: none;" accept="image/*" onchange="document.getElementById('uploadForm').submit();">
+                </div>
+            </form>
         </div>
         <div style="width: 100%; height: 100%; position: relative; display: flex; justify-content: space-between; align-items: center; gap: 2%;">
             <div style=" width: 20%;  margin-top: 3%;">
@@ -306,6 +319,10 @@ $qrCodeData = displayQRCodes($pdo, $userId);
                 document.getElementById("modal-box").style.display = "none"; // Hide modal when overlay is clicked
             }
         });
+
+        function handleFileSelect() {
+            document.getElementById("uploadForm").submit();
+        }
 
         document.addEventListener("DOMContentLoaded", function() {
         var errorMsg = document.getElementById("errorMessage");

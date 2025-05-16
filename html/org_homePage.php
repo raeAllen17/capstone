@@ -107,7 +107,7 @@ $data = displayOrgActivities($pdo, $userId);
         }
     </style>
 </head>
-<body style="background-color: white; height: 100vh; width: 100%; background: linear-gradient(120deg, #355C4C, #6DB28B, #CDECC9);">
+<body style="background-color: white; height: 100vh; width: 100%; background: linear-gradient(120deg, #B8E1FF, #FFD1FF, #FFFFFF);">
 
     <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
     <span id="successMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: green; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $successMessage; ?></span>    

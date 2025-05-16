@@ -7,6 +7,15 @@ require_once 'includes/activity_store.php';
 if (isset($_SESSION['id'])) {
     $userId = $_SESSION['id']; 
     $userData = getJoinerUserdata($pdo, $userId);
+
+    if ($userData && $userData['avatar']) {
+        $mimeType = 'image/jpeg';
+        $base64Image = base64_encode($userData['avatar']);
+        $avatarUrl = "data:$mimeType;base64,$base64Image";
+    } else {
+        $avatarUrl = "../imgs/defaultuser.png";
+    }
+
     $joinerName = $userData['firstName'];
 } else {
     session_unset();
@@ -36,25 +45,20 @@ if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") 
     unset($_SESSION['success_message']); 
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['qr_code_image'])) {
-    $uploadData = [
-        'id' => $_SESSION['id'],
-        'bank' => htmlspecialchars($_POST['bank'])
-    ];
-
-    if (uploadQRCode($_FILES['qr_code_image'], $uploadData, $pdo)) {
-        $_SESSION['success_message'] = "QR code uploaded successfully!";
-    } else {
-        $errorMessage = $_SESSION['error_message'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['logout'])){
+        session_destroy();
+        header('location: landing_page.php');
+        exit;
     }
-
-    header("Location: org_account.php");
-    exit();
 }
 
 
 //retrieve images
 $qrCodeData = displayQRCodes($pdo, $userId);
+//retrieve rated activities
+$ratedActivities = getRatedActivities($pdo, $userId);
+
 
 ?>
 
@@ -85,22 +89,6 @@ $qrCodeData = displayQRCodes($pdo, $userId);
         legend {
             padding-top: 10px;
             font-weight: bold;
-        }
-        .blue_buttons {
-            background: linear-gradient(to right, #5dbb63, #03ac13); 
-            border: none;
-            color: white;
-            padding: 12px 24px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            transition: transform 0.2s ease;
-            margin: 15px;
-        }
-        .blue_buttons:hover {
-            transform: translateY(-2px);
         }
         #div-button {
             cursor: pointer;
@@ -156,6 +144,24 @@ $qrCodeData = displayQRCodes($pdo, $userId);
             font-weight: bold; /* Bold text */
             color: #333; /* Darker text color */
         }
+        .input_fields {
+            width: 400px;
+        }
+        .blue_buttons {
+            border: none;
+            color: white;
+            padding: 0.5vw 0.7vw;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+            margin: 0.5vw  0vw;
+        }
+        .blue_buttons:hover {
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 
@@ -188,15 +194,58 @@ $qrCodeData = displayQRCodes($pdo, $userId);
             <!--  the button on the right of the cover -->
             <span id="div-button" style="position: absolute; bottom: 10px; right: 10px; display: flex; align-items:center; padding: 10px; background-color: grey; color: white; border-radius: 10px; gap: 10px;"><img src="../imgs/icon_image.png" alt="" style=" height: 30px; width: 30px;"><p>Add cover photo</p></span>      
             <!--  the profile image on the left -->
-            <div id="div-image" style="position: absolute; bottom: -45%; left: 3%; background-color: lightcoral; height:11vw; width:11vw; border-radius: 50%; display: grid; place-content: center;">
-                <button id="profileImage" style="cursor: pointer;background-image: url('../imgs/defaultuser.png'); height:10vw; width: 10vw; background-position: center; background-size: cover; border-radius: 50%; background-color:  transparent; border: none;" onclick="document.getElementById('profileInput').click();">
-                </button>
-                <input id="profileInput" type="file" style="display: none;" accept="image/*" onchange="updateImage(this, 'profileImage')">
-            </div>  
+            <form id="uploadForm" action="../html/includes/upload_avatarJoiner.php" method="POST" enctype="multipart/form-data">
+                <div id="div-image" style="position: absolute; bottom: -45%; left: 3%; background-color: lightcoral; height:11vw; width:11vw; border-radius: 50%; display: grid; place-content: center;">
+                    <button type="button" id="profileImage" 
+                        style="cursor: pointer; background-image: url('<?php echo $avatarUrl; ?>'); 
+                            height:10vw; width: 10vw; background-position: center; background-size: cover; 
+                            border-radius: 50%; background-color: transparent; border: none;" 
+                        onclick="document.getElementById('profileInput').click();">
+                    </button>
+                    <input id="profileInput" name="avatar" type="file" style="display: none;" accept="image/*" onchange="document.getElementById('uploadForm').submit();">
+                </div>
+            </form>  
         </div>
-        <div style="width: 100%; height: 100%; position: relative; display: flex; justify-content: space-between; align-items: center; gap: 2%;">
-                  
-        </div>
+        <form action="" method="POST" style="width: 100%; height: 70%; position: relative; display: flex; justify-content: space-between; gap: 2%; margin-top: 1vw;">
+            <div style="padding: 5vw 1vw 1vw 1vw; display: flex; flex-direction: column; gap: 1vw; height: 100%; width: 20%; position: relative;">
+                <h4>Rated Activities:</h4> 
+                <div style=" box-shadow: 0 4px 8px rgba(255, 165, 0, 0.2); padding: 1vw; max-height: 50%; overflow: auto; border-radius: 10px;">
+                    <?php if (!empty($ratedActivities)): ?>
+                        <?php foreach ($ratedActivities as $activity): ?>
+                            <p>
+                                <strong><?= htmlspecialchars($activity['activity_name']) ?></strong><br> 
+                                <?php
+                                    $rating = (int)$activity['rating'];
+                                    for ($i = 1; $i <= 5; $i++) {
+                                        echo $i <= $rating ? '⭐' : '✩';
+                                    }
+                                ?>
+                            </p>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p>No rated activities yet.</p>
+                    <?php endif; ?>
+                </div>   
+                <div style="position: absolute; bottom: 1vw; left: 1vw;">
+                    <button type="submit" name="logout" class="blue_buttons" style="background: linear-gradient(to right, #ff6b6b, #ffa07a);">Logout</button>
+                </div>        
+            </div>
+            <div style="border: 2px solid black; width: 80%; border-bottom-right-radius: 20px; padding: 2vw; background-color: whitesmoke;">
+                <h2>Personal Information</h2>
+                <div style="display: flex; flex-wrap: wrap; gap: 1vw; justify-content: space-between; margin: 1vw 0vw; width: 100%;">
+                    <input readonly class="input_fields" type="text" name="firstName" value="<?php echo htmlspecialchars($userData['firstName']); ?>">
+                    <input readonly class="input_fields" type="text" name="lastName" value="<?php echo htmlspecialchars($userData['lastName']); ?>">
+                    <input readonly class="input_fields" type="text" name="email" value="<?php echo htmlspecialchars($userData['email']); ?>">
+                    <input readonly class="input_fields" type="text" name="address" value="<?php echo htmlspecialchars($userData['address']); ?>">
+                    <input readonly class="input_fields" type="text" name="gender" value="<?php echo htmlspecialchars($userData['gender']); ?>">
+                    <input readonly class="input_fields" type="text" name="number" value="<?php echo htmlspecialchars($userData['contactNumber']); ?>">
+                </div>
+                <div style="display: flex; width: 100%; justify-content: flex-end; gap: 1vw;">
+                    <button type="reset" class="blue_buttons" style="background: linear-gradient(to right, #ff6b6b, #ffa07a);">Cancel</button>
+                    <button type="button" class="blue_buttons" style="background: linear-gradient(to bottom, #a8e6cf, #56ab91);">Edit</button>
+                </div>
+            </div>
+        </form>
     </div>
 
     <script>

@@ -14,16 +14,19 @@ try {
 
     $userId = $_SESSION['id'];
 
+    // Modified SQL query
     $sql = "
         SELECT 
-            a.id,
-            a.activity_name AS title,
-            a.date AS start,
-            p.status
+        a.id AS activity_id,
+        a.activity_name AS title,
+        a.date AS start,
+        a.status
         FROM 
-            activities a
+            participants p
         LEFT JOIN 
-            participants p ON a.id = p.activity_id AND p.participant_id = :user_id
+            activities a ON a.id = p.activity_id
+        WHERE 
+            p.participant_id = :user_id
     ";
 
     $stmt = $pdo->prepare($sql);
@@ -33,18 +36,20 @@ try {
 
     $events = [];
     foreach ($rawEvents as $event) {
-        $color = null;
+        $color = 'skyblue';
         $clickable = true;
 
-        if ($event['status'] === 'done') {
-            $color = 'green';
-            $clickable = false;
-        } elseif ($event['status'] === 'pending') {
-            $color = 'blue';
+        if ($event['status'] !== null) {
+            if ($event['status'] === 'done') {
+                $color = 'green';
+                $clickable = false;
+            } elseif ($event['status'] === 'pending') {
+                $color = 'skyblue';
+            }
         }
 
         $events[] = [
-            'id' => $event['id'],
+            'id' => $event['activity_id'], // Use the activity_id from the query
             'title' => $event['title'],
             'start' => $event['start'],
             'color' => $color,
