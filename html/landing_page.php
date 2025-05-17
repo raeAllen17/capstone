@@ -38,14 +38,34 @@
         #login-link {
             font-size: 16px;
             text-decoration: none; 
-            padding: 0.5vw 1vw; 
-            border-radius: 10px;
+            padding: 10px 20px; 
+            border-radius: 20px;
             color: black;
             font-weight: bold;
+            background-color: lightgray;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         #login-link:hover {
             background: linear-gradient(to bottom, #4caf50, #2e7d32);
             color: whitesmoke;
+            transform: translateY(-1px);
+        }
+        #signup-button {
+            border-style: none;
+            font-size: 1.8vh;
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: goldenrod;
+            color: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        #signup-button:hover {
+            background: linear-gradient(to bottom, #4caf50, #2e7d32);
+            transform: translateY(-1px);
+        }
+        .start_header:hover {
+            color: green;
         }
     </style>
 </head>
@@ -55,15 +75,11 @@
         <div class="nav_left">
             <ul class = "navbar">
                 <li><input type="button" class="logo"></li>
-                <li><a href="" onclick="openModal('modal_selection', event)">Home</a></li>
-                <li><a href="" onclick="openModal('modal_selection', event)">Activity</a></li>
-                <li><a href="" onclick="openModal('modal_selection', event)">Forum</a></li>
-                <li><a href="" onclick="openModal('modal_selection', event)">Marketplace</a></li>
-                <li><a href="" onclick="openModal('modal_selection', event)">Notification</a></li>
             </ul>
         </div>
         <div class="nav_right">   
             <a href="login_page.php" id="login-link">LOGIN</a>
+            <input type="button" id="signup-button" value="SIGN UP" onclick="openModal('modal_selection', event)">
         </div>          
     </nav>  
     <!-- NAVBAR END -->
@@ -77,11 +93,11 @@
             </div>
 
             <div class="hero_button">
-                <input type="button" class = "signup_button" value="Get Started" onclick="openModal('modal_selection', event)">
+                <input type="button" class ="signup_button" value="Learn More" onclick="document.getElementById('about_section').scrollIntoView({ behavior: 'smooth' });">
             </div>
         </div>
 
-        <div class="about_section">
+        <div class="about_section" id="about_section">
             <div class="about_text">
                 <h1>About our Website</h1>
                 <p>
@@ -122,8 +138,8 @@
 
         <div class="start_section">
             <div class="start_header">
-                <h1>How to start</h1>
-                <img src="../imgs/icon_arrow.png" alt="" height="60px" id = "start_icon">
+                <h1 onclick="openModal('joiner_modal', event)">How to start</h1>
+                <img src="../imgs/icon_arrow.png" alt="" height="60px" id="start_icon" onclick="openModal('joiner_modal', event)">
             </div>
             
             <div class="start_widget">
@@ -133,12 +149,12 @@
                     <p>Create a joiner account through the sign up button.</p>
                 </div>
                 <div class="start_text">
-                    <img src="../icon_search.png" alt="" height="80px" id = "start_image">
+                    <img src="../imgs/icon_search.png" alt="" height="80px" id = "start_image">
                     <h3>DISCOVER</h3>
                     <p>Browse activities filtered to your liking.</p>
                 </div>
                 <div class="start_text">
-                    <img src="../icon_join.png" alt="" height="80px" id = "start_image">
+                    <img src="../imgs/icon_join.png" alt="" height="80px" id = "start_image">
                     <h3>JOIN & CONNECT</h3>
                     <p>Participate in activites made by the organizers.</p>
                 </div>
@@ -175,10 +191,10 @@
             
         </div>
 
-        <div class="start_section">
-            <div class="start_header_organizer">
-                <h1 id = "start_header">Join as Organizer</h1>
-                <img src="../imgs/icon_arrow.png" alt="" height="60px" id = "start_icon">
+        <div class="start_section" style="margin-top: 2vw;">
+            <div class="start_header">
+                <h1 id = "start_header" onclick="openModal('organizer_modal', event)">Join as Organizer</h1>
+                <img src="../imgs/icon_arrow.png" alt="" height="60px" id = "start_icon" onclick="openModal('organizer_modal', event)">
             </div>  
             <div class="start_widget">
                 <div class="start_text">

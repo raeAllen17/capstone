@@ -44,8 +44,8 @@ if (isset($_SESSION["id"])) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Activity</title>
-
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
+    
 
     <style>
         * {
@@ -143,9 +143,24 @@ if (isset($_SESSION["id"])) {
         .blue_buttons:hover {
             transform: translateY(-2px);
         }
+        #location-button {
+            background-image: url('../imgs/icon_location3.png'); background-size: cover;
+            border: none; border-radius: 50%;
+            background-color: transparent;
+            height: 20px; width: 20px; padding: 0.8vw;
+            position: absolute; right: 1vw; top: 1.8vw;
+            transition: transform 0.2s ease;
+        }
+        #location-button:hover {
+            transform: translateY(-2px);
+        }
     </style>
 
 </head>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="includes/location-picker.js"></script>
+
 <body style=" height: 100vh; background-color: lightgrey; margin: 0; padding: 0;  background: linear-gradient(120deg, #355C4C, #6DB28B, #CDECC9); ">
 
     <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); 
@@ -200,14 +215,17 @@ if (isset($_SESSION["id"])) {
                         <div style="width: 100%;">
                             <p>Description</p>
                             <span>
-                                <textarea style="width: 100%; border: 2px solid black; border-radius: 10px; resize:none; padding: 20px;" name="description" id="" cols="30" rows="10" required placeholder="Enter activity details here"></textarea>
+                                <textarea style="width: 100%; border: 2px solid black; border-radius: 10px; resize:none; padding: 20px;" name="description" id="" cols="30" rows="10" required placeholder="Enter activity details here (date, time, price)..."></textarea>
                             </span>
                         </div>
                         <div style=" display: flex; justify-content: space-between; gap: 30px;">
                             <div style="display: flex; flex-direction: column; gap: 20px;">
-                                <div>
+                                <div  style=" height: auto; width: auto; position: relative;">
                                     <p>Location</p>
-                                    <input type="text" class="input_fields" name="location" required placeholder="Diwa, Pilar, Bataan">
+                                    <input type="text" class="input_fields" name="location" id="locationInput" required placeholder="Diwa, Pilar, Bataan">
+                                    <input type="hidden" id="latitude" name="latitude">
+                                    <input type="hidden" id="longitude" name="longitude">
+                                    <button type="button" id="location-button" onclick="openMap()"></button>
                                 </div>
                                 <div>
                                     <p>Date</p>
@@ -254,7 +272,7 @@ if (isset($_SESSION["id"])) {
                                 <div>
                                     <p>Pickup Points</p>
                                     <div style="display: flex; position: relative;">
-                                        <input type="text" id="pickup_input" class="input_fields" style="padding-right: 80px;" placeholder="Enter pickup point">
+                                        <input type="text" id="pickup_input" class="input_fields" style="padding-right: 80px;" placeholder="Enter pickup point, EST Arrival">
                                         <button type="button" id="add_pickup_btn" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; color: black; background-color: transparent; border: none; border-radius: 0 10px 10px 0; cursor: pointer; font-size: 20px;">+</button>
                                         <button type="button" id="view_pickup_btn" style="position: absolute; right: 45px; top: 0; height: 100%; width: 40px; color: black; background-color: transparent; border: none; cursor: pointer; font-size: 16px;">▼</button>
                                     </div>
@@ -273,10 +291,13 @@ if (isset($_SESSION["id"])) {
                 </div>              
             </form>
         </div>
-        
+    </div>
+    <div id="overlay" onclick="closeMap()"></div>
+        <div id="mapModal">
+            <input type="text" id="mapSearch" placeholder="Search location..." onkeydown="if(event.key==='Enter') searchMap()">
+        <div id="map"></div>
     </div>
     <script>
-        
         let currentSlideIndex = 0;
         let images = [];
         let pickupPoints = [];
@@ -450,7 +471,8 @@ if (isset($_SESSION["id"])) {
         }, 2000);
         }
         });
-
     </script>
 </body>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" type="text/css" href="../css/location-picker.css"> 
 </html>
