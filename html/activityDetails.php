@@ -165,7 +165,7 @@ $qrCodeData = displayQRCodes($pdo, $org_id);
                             <h1><?php echo htmlspecialchars($activities['activity_name']); ?></h1>
                             <p>by: <?php echo htmlspecialchars($activities['orgname']); ?></p>
                         </div>
-                        <div style="color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 600px; padding: 20px; text-align: center;">
+                        <div style="color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; padding: 20px; text-align: center; max-height: 250px; overflow: auto; ">
                             <p style="white-space: normal; line-height: 1.5; margin: 0; font-size: 1.2em; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);"> 
                                 <?php echo htmlspecialchars($activities['description']); ?>
                             </p>
@@ -176,9 +176,6 @@ $qrCodeData = displayQRCodes($pdo, $org_id);
                             <h2><?php echo htmlspecialchars($activities['distance']); ?></h2>
                             <h2><?php echo htmlspecialchars($activities['current_participants']); ?>/<?php echo htmlspecialchars($activities['participants']); ?></h2>
                             <h2><?php $date = new DateTime($activities['date']); echo $date->format('F j, Y');?></h2>
-                        </div>
-                        <div style="width: 100%; margin-left: 25%;">
-                            <button type="button" id="3d-button" style="padding: 10px; border-radius: 10px; border: none; cursor: pointer;">3D MAP</button>
                         </div>
                     </div>
                     <div class="slideshow" style="background-image: linear-gradient(to right, rgba(0,0,0,0), rgba(210,210,210,1)); height:500px; width: 700px;">
