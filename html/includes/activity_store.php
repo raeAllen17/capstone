@@ -1175,6 +1175,12 @@ function getRatedActivities($pdo, $userId) {
     return $results;
 }
 
+function rejectRefundRequest($pdo, $participantId, $activityId){
+    $stmt1 = $pdo->prepare("UPDATE participants SET notified = 'yes', refund = 'no' WHERE participant_id = ? AND activity_id = ?");
+    $stmt1->execute([$participantId, $activityId]);
+
+    return true;
+}
 
 
 

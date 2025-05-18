@@ -136,7 +136,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                     $email = $result['email'];
                     $firstName = $result['firstName'];
                     $lastName = $result['lastName'];
-    
+
                     $subject = "Your activity $activityName happening soon!";
                     $message = "Dear $firstName $lastName,<br><br>We would like to inform you about your participation in the activity <strong>$activityName</strong> - $activityDate.<br><br>Best regards,<br>JOYn";
     
@@ -258,6 +258,58 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
 
         header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
         exit();
+        
+    } else if (isset($_POST['reject-refund'])){
+        $activityId = $_GET['id'];
+        $participantId = $_POST['participant_id'];
+        
+        rejectRefundRequest($pdo, $participantId, $activityId);
+
+        $stmt = $pdo->prepare("SELECT activity_name FROM activities WHERE id = ?");
+        $stmt->execute([$activityId]);
+        $activity = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($activity) {
+            $activityName = $activity['activity_name'];
+            $message = " Your refund request on <b>$activityName</b> has been denied.";
+        
+            $stmt = $pdo->prepare("INSERT INTO notification_joiner (participant_id, message) VALUES (?, ?)");
+            $stmt->execute([$participantId, $message]);
+        
+            $_SESSION['success_message'] = "Notice successful.";
+        } else {
+            $_SESSION['error_message'] = "Activity not found.";
+        }
+
+        header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
+        exit();
+    } else if (isset($_POST['print'])){
+        if (isset($actives) && is_array($actives) && count($actives) > 0) {
+            // Set headers to tell browser to download file as CSV
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="active_participants.csv"');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+    
+            $output = fopen('php://output', 'w');
+    
+            // Add CSV column headers
+            fputcsv($output, ['Firstname', 'Lastname', 'Pickup Point', 'Number']);
+    
+            // Loop through data and output rows
+            foreach ($actives as $participant) {
+                fputcsv($output, [
+                    $participant['firstName'],
+                    $participant['lastName'],
+                    $participant['pickup_location'],
+                    $participant['contactNumber']
+                ]);
+            }
+    
+            fclose($output);
+            exit();
+        } else {
+            echo "No active participants found to export.";
+        }
         
     }
 }
@@ -464,8 +516,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                                                 <?php
                                                 $imgData = base64_encode($participant['image']);
                                                 $src = 'data:image/jpeg;base64,' . $imgData;
-                                                ?> 
-                                                <a href="<?php echo $src; ?>" target="_blank">
+                                                ?>
+                                                <a href="<?php echo $src; ?>" download="participant.jpg">
                                                     <img src="<?php echo $src; ?>" alt="Participant Image" style="max-width:100px; max-height:100px; cursor: pointer;">
                                                 </a>
                                             <?php else: ?>
@@ -493,7 +545,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                 <div style="width: 600px; height: 20vw; background-color: whitesmoke; border-radius: 20px; padding: 1.5vw; border: 2px solid #A9BA9D; position: relative; overflow: auto; box-shadow: 0 4px 10px rgba(0, 128, 0, 0.6);">
                     <h2 style=" width: 100%; border-bottom: 1px solid black; text-align: left; padding-bottom: 1vw;">Active</h2>
                     <form action="" method="POST" style="position: absolute; top: 1.5vw; right: 2vw;">
-                            <button class="button-buttons" name="notify_date_all" style="">notify</button> 
+                        <button class="button-buttons" name="notify_date_all" style="">NOTIFY</button> 
+                        <button class="button-buttons" name="print" style="">Print</button> 
                     </form> 
                     <table>                       
                         <tbody>
@@ -533,7 +586,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                                             <form action="" method="POST" enctype="multipart/form-data">
                                                 <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($refund['participant_id']); ?>">
                                                 <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($activityId); ?>">
-                                                <button class="button-buttons" name="" style="background: url('../imgs/icon_cross.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button>
+                                                <button class="button-buttons" name="reject-refund" style="background: url('../imgs/icon_cross.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button>
                                                 <button class="button-buttons" name="accept-refund" style="background: url('../imgs/icon_check.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> 
                                             </form>       
                                         </td>
