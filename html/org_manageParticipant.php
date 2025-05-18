@@ -400,7 +400,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                 <li style=" border-bottom: 2px solid green;"><a href="org_homePage.php">Home</a></li>
                 <li><a href="org_createAct.php">Activity</a></li>
                 <li><a href="org_forumPage.php">Forum</a></li>
-                <li><a href="org_marketplace.php">Marketplace</a></li>
                 <li><a href="org_notification.php">Notification</a></li>
             </ul>
         </div>

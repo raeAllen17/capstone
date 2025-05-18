@@ -209,7 +209,7 @@ function displayQRCodes($pdo, $userId) {
     ];
 
     try {
-        $query = $pdo->prepare("SELECT qr_code_image, bank_name FROM qr_codes WHERE org_id = ?");
+        $query = $pdo->prepare("SELECT id,qr_code_image, bank_name FROM qr_codes WHERE org_id = ?");
         $query->execute([$userId]);
         $result['data'] = $query->fetchAll(PDO::FETCH_ASSOC);
         $result['success'] = true;

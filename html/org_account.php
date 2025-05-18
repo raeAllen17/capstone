@@ -60,6 +60,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['qr_code_image'])) {
     exit();
 }
 
+if (isset($_POST['delete-picture'])){
+    $picId = $_POST['qr-id'];
+    $stmt = $pdo->prepare("DELETE FROM qr_codes WHERE id = :id");
+    $stmt->execute(['id' => $picId]);
+
+    $_SESSION['success_message'] = "Picture deleted successfully.";
+    header("Location: org_account.php");
+    exit();
+}
+
 //retrieve images
 $qrCodeData = displayQRCodes($pdo, $userId);
 
@@ -248,8 +258,12 @@ $qrCodeData = displayQRCodes($pdo, $userId);
                         <?php if ($qrCodeData['success']): ?>
                             <?php foreach ($qrCodeData['data'] as $qrCode): ?>
                                 <div class="qr-code-item" style=" background-color: lightgrey; border: 1px solid black; border-radius: 10px; padding: 10px; text-align: center; margin: 10px; transition: transform 0.2s;">
+                                    <form action="" method="POST" style="width: 100%; margin: 0.5vw 0vw; display: flex; justify-content: flex-start;">
+                                        <input type="hidden" name="qr-id" value=<?php echo htmlspecialchars($qrCode['id']) ?>>
+                                        <button class="" style="padding: 5px 10px;" name="delete-picture">X</button>
+                                    </form>
                                     <img src="data:image/jpeg;base64,<?php echo base64_encode($qrCode['qr_code_image']); ?>" alt="QR Code" class="qr-code-image"/>
-                                    <p class="bank-name"><?php echo htmlspecialchars($qrCode['bank_name']); ?></p>
+                                    <p class="bank-name"><?php echo htmlspecialchars($qrCode['bank_name']); ?></p>                                  
                                 </div>
                             <?php endforeach; ?>
                         <?php else: ?>

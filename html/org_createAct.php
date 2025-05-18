@@ -22,9 +22,21 @@ if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (isset($_POST['submit'])) {
-        $result=createActivity($pdo, $_POST, $userId);
-        header("location: org_createAct.php");
-        exit();
+
+
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM qr_codes WHERE org_id = ?");
+        $stmt->execute([$userId]);
+        $count = $stmt->fetchColumn();
+
+        if ($count == 0) {
+            $_SESSION['error_message']="Kindly set up online bank details in Account Page first."; 
+            header("location: org_createAct.php");
+            exit();
+        } else {
+            $result=createActivity($pdo, $_POST, $userId);
+            header("location: org_createAct.php");
+            exit();
+        } 
     } 
 }
 
