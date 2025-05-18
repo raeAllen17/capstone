@@ -941,8 +941,8 @@ function insertNotification($pdo, $activityId, $orgId, $participantId){
     $stmt->execute([$orgId, $activityId, $message]);
 }
 
-function getMarketplace($pdo, $sessionId) {
-    $stmt = $pdo->prepare("
+function getMarketplace($pdo, $userId, $category = '') {
+    $query = "
         SELECT 
             m.id AS marketplace_id,
             m.participant_id,
@@ -962,13 +962,22 @@ function getMarketplace($pdo, $sessionId) {
         LEFT JOIN 
             account_joiner aj ON m.participant_id = aj.id
         WHERE 
-            m.participant_id != :sessionId
-            AND m.status = 'pending'
-        ORDER BY 
-            m.id DESC
-    ");
-    
-    $stmt->execute([':sessionId' => $sessionId]);
+            m.participant_id != :sessionId  -- Exclude listings by current user
+            AND m.status = 'pending'       -- Only include pending listings
+    ";
+
+    $params = [':sessionId' => $userId];
+
+    // Filter by category if provided
+    if ($category !== '') {
+        $query .= " AND m.category = :category";
+        $params[':category'] = (int)$category; // Cast to int for safety
+    }
+
+    $query .= " ORDER BY m.id DESC";  // Sort by latest listings
+
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($params);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $grouped = [];
@@ -997,9 +1006,8 @@ function getMarketplace($pdo, $sessionId) {
 
     return array_values($grouped);
 }
-
-function getUserListing($pdo, $userId){
-    $stmt = $pdo->prepare("
+function getUserListing($pdo, $userId, $category = '') {
+    $query = "
         SELECT 
             m.id AS marketplace_id,
             m.participant_id,
@@ -1020,11 +1028,20 @@ function getUserListing($pdo, $userId){
             account_joiner aj ON m.participant_id = aj.id
         WHERE 
             m.participant_id = :sessionId
-        ORDER BY 
-            m.id DESC
-    ");
-    
-    $stmt->execute([':sessionId' => $userId]);
+    ";
+
+    $params = [':sessionId' => $userId];
+
+    // Filter by category if provided (0, 1, 2 are valid)
+    if ($category !== '') {
+        $query .= " AND m.category = :category";
+        $params[':category'] = (int)$category; // Cast to int for safety
+    }
+
+    $query .= " ORDER BY m.id DESC";
+
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($params);
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $grouped = [];

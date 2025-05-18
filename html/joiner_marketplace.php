@@ -36,7 +36,7 @@ $userItems = getUserListing($pdo, $userId);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Activity</title>
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -238,18 +238,18 @@ $userItems = getUserListing($pdo, $userId);
                     Top Selling ★
                 </div>
                 <div style="display: flex; align-items: center; gap: 2vw;">
-                    <select name="" id="" style=" width: 200px; border: 2px solid white;">
-                        <option value="" disabled selected>Category</option>
-                        <option value="">Gear & Equipment</option>
-                        <option value="">Shelter & Sleeping</option>
-                        <option value="">Navigation & Safety</option>
+                    <select name="category" id="category-select" style=" width: 200px; border: 2px solid white;">
+                        <option value="">All Categories</option>
+                        <option value="0">Gear & Equipment</option>
+                        <option value="1">Shelter & Sleeping</option>
+                        <option value="2">Navigation & Safety</option>
                     </select>
                     <a href="joiner_yourListing.php" id="listing-button">Your Listing</a>
                     <a href="joiner_tradeOffers.php" id="listing-button">Offers</a>
                     <a href="joiner_marketList.php" id="listing-button">Create Listing</a>                   
                 </div>
             </div>
-            <div style="height: 60%; width: 80%; border: 2px solid black; border-radius: 20px; background-color: whitesmoke; padding: 1vw; display: flex; flex-wrap: wrap; overflow: auto; gap: 1vw;">
+            <div id="marketplace-items-wrapper" style="height: 60%; width: 80%; border: 2px solid black; border-radius: 20px; background-color: whitesmoke; padding: 1vw; display: flex; flex-wrap: wrap; overflow: auto; gap: 1vw;">
                 <?php foreach ($marketplaceItems as $item): ?>
                     <div class="item-card" onclick="openTradeModal(<?= $item['id'] ?>, <?= $item['participant_id'] ?>, '<?= htmlspecialchars($item['item_name'], ENT_QUOTES) ?>', event)">
                         <?php if (!empty($item['images'])): ?>
@@ -366,6 +366,26 @@ $userItems = getUserListing($pdo, $userId);
         }, 2000);
         }
         });
+
+        $(document).ready(function () {
+            $('#category-select').on('change', function () {
+                var selectedCategory = $(this).val(); // Get the selected category
+
+                $.ajax({
+                    url: 'includes/fetchMarketplaceItems.php', // The URL of the new PHP file
+                    type: 'POST',
+                    data: { category: selectedCategory }, // Send the selected category in the request
+                    success: function (response) {
+                        // Update the marketplace items display with the response HTML
+                        $('#marketplace-items-wrapper').html(response); // Assuming this is the container where items will be displayed
+                    },
+                    error: function () {
+                        alert("Failed to fetch marketplace items.");
+                    }
+                });
+            });
+        });
+
     </script>
 </body>
 </html>

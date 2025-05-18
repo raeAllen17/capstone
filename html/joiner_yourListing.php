@@ -36,8 +36,8 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $_SESSION['success_message'] = "Item successfully deleted.";
     header("location: joiner_yourListing.php");
 } 
-
-$userItems = getUserListing($pdo, $userId);
+$selectedCategory = $_POST['category'] ?? '';
+$userItems = getUserListing($pdo, $userId, $selectedCategory);
 ?>
 
 <!DOCTYPE html>
@@ -48,7 +48,7 @@ $userItems = getUserListing($pdo, $userId);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Activity</title>
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -243,21 +243,20 @@ $userItems = getUserListing($pdo, $userId);
             <div style="width: 80%; text-align: left; margin-bottom: 1vw;">
                 <h1>Your GEARS <br> to trade. </h1>
             </div>    
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 70%; margin-bottom: 1vw;">
-                <div>
-                    
+            <form id="filter-form" method="POST" style="display: flex; justify-content: space-between; align-items: center; width: 70%; margin-bottom: 1vw;">
+                <div>   
                 </div>
                 <div style="display: flex; align-items: center; gap: 2vw;">
-                    <select name="" id="" style=" width: 200px; border: 2px solid white;">
-                        <option value="" disabled selected>Category</option>
-                        <option value="">Gear & Equipment</option>
-                        <option value="">Shelter & Sleeping</option>
-                        <option value="">Navigation & Safety</option>
+                    <select name="category" id="category-filter" style=" width: 200px; border: 2px solid white;">
+                        <option value="" >All Categories</option>
+                        <option value="0">Gear & Equipment</option>
+                        <option value="1">Shelter & Sleeping</option>
+                        <option value="2">Navigation & Safety</option>
                     </select>
                     <a href="joiner_marketList.php" id="listing-button">Create Listing</a>                   
                 </div>
-            </div>
-            <div style="height: 60%; width: 80%; border: 2px solid black; border-radius: 20px; background-color: whitesmoke; padding: 1vw; display: flex; flex-wrap: wrap; overflow: auto; gap: 1vw;">
+            </form>
+            <div id="user-listing-wrapper" style="height: 60%; width: 80%; border: 2px solid black; border-radius: 20px; background-color: whitesmoke; padding: 1vw; display: flex; flex-wrap: wrap; overflow: auto; gap: 1vw;">
                 <?php foreach ($userItems as $item): ?>
                     <div class="item-card">
                         <?php if (!empty($item['images'])): ?>
@@ -303,6 +302,25 @@ $userItems = getUserListing($pdo, $userId);
         }, 2000);
         }
         });
+
+        $(document).ready(function () {
+    $('#filter-form select').on('change', function () {
+        $.ajax({
+            url: 'includes/fetchUserListings.php',
+            type: 'POST',
+            data: $('#filter-form').serialize(),
+            success: function (response) {
+                $('#user-listing-wrapper').html(response); // Replace the listings
+            },
+            error: function (xhr, status, error) {
+                console.log("AJAX Error: " + error); // Log the error message
+                console.log("Status: " + status); // Log the status code
+                console.log("Response: " + xhr.responseText); // Log the full response from the server
+                alert("Failed to fetch filtered items.");
+            }
+        });
+    });
+});
     </script>
 </body>
 </html>

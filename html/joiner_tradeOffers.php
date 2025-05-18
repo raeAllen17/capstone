@@ -149,7 +149,7 @@ $tradeStatus = getTradeStatus($pdo, $userId);
                     <a href="joiner_marketList.php" id="listing-button">Create Listing</a>                   
                 </div>
             </div>
-            <div style="height: 300px; width: 50%; border: 2px solid black; border-radius: 20px; background-color: whitesmoke; padding: 1vw; display: flex; flex-wrap: wrap; overflow: auto; gap: 1vw;">
+            <div style="height: 500px; width: 50%; border: 2px solid black; border-radius: 20px; background-color: whitesmoke; padding: 1vw; display: flex; flex-wrap: wrap; overflow: auto; gap: 1vw;">
                 <?php foreach ($trades as $trade): ?>
                     <div style="border: 1px solid #ccc; padding: 1vw; border-radius: 10px; background-color: white; width: 100%; height: auto;">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
