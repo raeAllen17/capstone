@@ -225,7 +225,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         ];
 
         $result = updateActivityDetails($pdo, $userId, $activityId, $data);
-
+        $newDateFormatted = date("F j, Y", strtotime($data['date']));
+        $activityName = $data['activity_name'];
         if (!empty($result['success']) && !empty($result['data']['date_changed'])) {
             if (isset($actives) && is_array($actives)) {
                 foreach ($actives as $active) {
@@ -238,7 +239,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         $lastName = $result['lastName'];
         
                         $subject = "Your activity $activityName has been rescheduled!";
-                        $message = "Dear $firstName $lastName,<br><br>We would like to inform you about your participation in the activity <strong>$activityName</strong> has been rescheduled to - $activityDate.<br><br>Best regards,<br>JOYn";
+                        $message = "Dear $firstName $lastName,<br><br>We would like to inform you about your participation in the activity <strong>$activityName</strong> has been rescheduled to - $newDateFormatted.<br><br>Best regards,<br>JOYn";
         
                         if ($email) {
                             sendActivityReminderEmail($email, $subject, $message);

@@ -718,7 +718,7 @@ function getCurrentActivities($pdo, $userId) {
     ];
     
     $stmt = $pdo->prepare("
-        SELECT activities.id, activities.activity_name
+        SELECT activities.id, activities.activity_name, activities.date
         FROM participants
         JOIN activities ON participants.activity_id = activities.id
         WHERE participants.status = 'active' 

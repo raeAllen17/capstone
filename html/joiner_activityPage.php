@@ -162,7 +162,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                             <?php foreach ($currentActivities['data'] as $activity): ?>
                                 <form action="" method="POST">
                                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 0.3px solid black; padding: 1vw 2vw; background-color: rgba(245, 245, 245, 0.5);">
-                                        <?php echo htmlspecialchars($activity['activity_name']); ?>
+                                        <h4><?php echo htmlspecialchars($activity['activity_name']); ?></h4>
+                                        <p><?php echo htmlspecialchars($activity['date']); ?></p>
                                         <input type="hidden" name="activityId" value="<?php echo htmlspecialchars($activity['id']); ?>">
                                         <button class="button-buttons" name="refund">Refund</button>
                                     </div>
