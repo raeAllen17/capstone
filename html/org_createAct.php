@@ -272,7 +272,7 @@ if (isset($_SESSION["id"])) {
                                 <div>
                                     <p>Pickup Points</p>
                                     <div style="display: flex; position: relative;">
-                                        <input type="text" id="pickup_input" class="input_fields" style="padding-right: 80px;" placeholder="Enter pickup point, EST Arrival">
+                                        <input type="text" id="pickup_input" class="input_fields" style="padding-right: 80px;" placeholder="Brgy Name - Town Name - Municipality Name : 8:00AM">
                                         <button type="button" id="add_pickup_btn" style="position: absolute; right: 0; top: 0; height: 100%; width: 40px; color: black; background-color: transparent; border: none; border-radius: 0 10px 10px 0; cursor: pointer; font-size: 20px;">+</button>
                                         <button type="button" id="view_pickup_btn" style="position: absolute; right: 45px; top: 0; height: 100%; width: 40px; color: black; background-color: transparent; border: none; cursor: pointer; font-size: 16px;">▼</button>
                                     </div>
@@ -415,35 +415,41 @@ if (isset($_SESSION["id"])) {
             }
 
             // Add new pickup point
-            addPickupBtn.addEventListener("click", function() {
-                let pickupPoint = pickupInput.value.trim();
-                if (pickupPoint && !pickupPoints.includes(pickupPoint)) {
-                    pickupPoints.push(pickupPoint);
-                    updatePickupList();
-                    updateHiddenInput();
-                    pickupInput.value = ""; // Clear input
-                }
-            });
+            addPickupBtn.addEventListener("click", function () {
+            let pickupPoint = pickupInput.value.trim();
+            const formatRegex = /^[a-zA-Z\s]+ ?- ?[a-zA-Z\s]+ ?- ?[a-zA-Z\s]+ ?: ?(0?[1-9]|1[0-2]):[0-5][0-9](AM|PM)$/i;
+            
+            if (!formatRegex.test(pickupPoint)) {
+                alert("Please enter in the format: Brgy Name - Town Name - Municipality Name : 8:00AM");
+                return;
+            }
 
-            // Allow adding via Enter key
-            pickupInput.addEventListener("keypress", function(e) {
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                    addPickupBtn.click();
-                }
-            });
+            if (!pickupPoints.includes(pickupPoint)) {
+                pickupPoints.push(pickupPoint);
+                updatePickupList();
+                updateHiddenInput();
+                pickupInput.value = ""; // Clear input
+            }
+        });
+        // Allow adding via Enter key
+         pickupInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                addPickupBtn.click();
+            }
+        });
 
-            // Toggle pickup dropdown visibility
-            viewPickupBtn.addEventListener("click", function() {
-                pickupDropdown.style.display = (pickupDropdown.style.display === "block") ? "none" : "block";
-            });
+        // Toggle pickup dropdown visibility
+        viewPickupBtn.addEventListener("click", function() {
+            pickupDropdown.style.display = (pickupDropdown.style.display === "block") ? "none" : "block";
+        });
 
-            // Close dropdown if clicked outside
-            document.addEventListener("click", function(e) {
-                if (!e.target.closest("#pickup_dropdown") && e.target !== viewPickupBtn) {
-                    pickupDropdown.style.display = "none";
-                }
-            });
+        // Close dropdown if clicked outside
+        document.addEventListener("click", function(e) {
+            if (!e.target.closest("#pickup_dropdown") && e.target !== viewPickupBtn) {
+                pickupDropdown.style.display = "none";
+            }
+        });
 
             // Initialize pickup list and hidden input
             updatePickupList();

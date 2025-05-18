@@ -25,8 +25,15 @@ function createActivity($pdo, $userData, $userId){
         return $result;
     }
 
-    $pickup_locations = isset($userData["pickup_locations"]) ? json_decode($userData["pickup_locations"], true) : [];
-    $pickup_locations = implode(',', $pickup_locations);
+    $pickup_locations_raw = $userData["pickup_locations"] ?? '[]';
+    $pickup_locations_array = json_decode($pickup_locations_raw, true);
+
+    // Fallback if decoding fails or is not an array
+    if (!is_array($pickup_locations_array)) {
+        $pickup_locations_array = [];
+    }
+
+$pickup_locations = implode(',', $pickup_locations_array);
 
     $imagePaths = [];
     if (isset($_FILES['images'])) {
@@ -60,8 +67,7 @@ function createActivity($pdo, $userData, $userId){
     return $result;
 
 }
-
-function displayActivity($pdo){
+function displayActivity($pdo, $price = '', $date = '', $distance = '', $availability = '') {
     $result = [
         'success' => false,
         'failed_message' => '',
@@ -70,7 +76,47 @@ function displayActivity($pdo){
     ];
 
     try {
-        $query = "SELECT * FROM activities WHERE status = 'pending'";
+        // Start building the SQL query
+        $query = "SELECT * FROM activities WHERE status = 'pending'"; // Default filter: activities with 'pending' status
+        
+        // Initialize an array to store the ordering conditions
+        $orderByConditions = [];
+
+        // Apply filters if they are set
+
+        // Price filter
+        if ($price == 'low-high') {
+            $orderByConditions[] = "price ASC"; // Ascending price
+        } elseif ($price == 'high-low') {
+            $orderByConditions[] = "price DESC"; // Descending price
+        }
+
+        // Date filter
+        if ($date == 'soon') {
+            $orderByConditions[] = "date ASC";  // Soonest activities first
+        } elseif ($date == 'later') {
+            $orderByConditions[] = "date DESC"; // Latest activities first
+        }
+
+        // Distance filter
+        if ($distance == 'longest') {
+            // We will strip the non-numeric characters from distance for sorting
+            $orderByConditions[] = "CAST(SUBSTRING_INDEX(distance, ' ', 1) AS DECIMAL) DESC";  // Longest first
+        } elseif ($distance == 'shortest') {
+            // We will strip the non-numeric characters from distance for sorting
+            $orderByConditions[] = "CAST(SUBSTRING_INDEX(distance, ' ', 1) AS DECIMAL) ASC";  // Shortest first
+        }
+
+        // Availability filter (checkbox)
+        if ($availability == 'yes') {
+            $query .= " AND current_participants < participants";  // Only activities that have available spots
+        }
+
+        // If any order conditions are set, append them to the query
+        if (count($orderByConditions) > 0) {
+            $query .= " ORDER BY " . implode(", ", $orderByConditions);  // Combine all order by conditions
+        }
+        // Prepare and execute the query
         $stmt = $pdo->prepare($query);
         $stmt->execute();
         $result['data'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -81,7 +127,6 @@ function displayActivity($pdo){
 
     return $result;
 }
-
 function getactivities($pdo, $activityId)  {
     $stmt = $pdo->prepare("SELECT * FROM activities WHERE id = ?");
     $stmt->execute([$activityId]);
@@ -345,7 +390,7 @@ function updateParticipantNumber($pdo, $activityId){
 
 function getActiveParticipants ($pdo, $orgId, $activityId) {
     $stmt = $pdo->prepare("
-        SELECT p.id, p.participant_id, j.firstName, j.lastName, p.image 
+        SELECT p.id, p.participant_id, j.firstName, j.lastName, j.contactNumber, p.image, p.pickup_location
         FROM participants p
         JOIN account_joiner j ON p.participant_id = j.id 
         WHERE p.org_id = ? AND p.activity_id = ? AND p.status = 'active' AND p.refund = 'no'

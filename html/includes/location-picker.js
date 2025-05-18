@@ -56,14 +56,19 @@ function setMarker(lat, lng) {
 }
 
 function reverseGeocode(lat, lng) {
-  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+  fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`)
     .then(res => res.json())
     .then(data => {
-      if (data.display_name) {
-        document.getElementById("locationInput").value = data.display_name;
-      } else {
-        document.getElementById("locationInput").value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-      }
+      const address = data.address;
+      const barangay = address.suburb || address.village || address.hamlet || '';
+      const town = address.town || address.city || address.municipality || '';
+      const province = address.state || address.county || '';
+
+      // Format the location string
+      const locationStr = [barangay, town, province].filter(Boolean).join(', ');
+
+      // Update the fields
+      document.getElementById("locationInput").value = locationStr || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
       document.getElementById("latitude").value = lat;
       document.getElementById("longitude").value = lng;
       closeMap();

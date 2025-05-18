@@ -162,9 +162,24 @@ if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") 
             -webkit-appearance: none; 
             -moz-appearance: none;
         }
+        #location-button {
+            background-image: url('../imgs/icon_location3.png'); background-size: cover;
+            border: none; border-radius: 50%;
+            background-color: transparent;
+            height: 20px; width: 20px; padding: 0.8vw;
+            position: absolute; right: 1vw; top: 0.3vw;
+            transition: transform 0.2s ease;
+        }
+        #location-button:hover {
+            transform: translateY(-2px);
+        }
         
     </style>
 </head>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="includes/location-picker.js"></script>
+
 <body style="height: 100vh;">
 
     <span id="errorMessage" style=" position: absolute; top: 10%; left: 50%; transform: translate(-50%); height: 3vw; width: 30vw; background-color: red; z-index: 999; border-radius: 20px; color: white; text-align: center; display: none; justify-content: center; align-items: center;"><?php echo $errorMessage; ?></span>
@@ -214,7 +229,12 @@ if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") 
                             <option value="1">Good</option>
                             <option value="2">New</option>
                         </select>
-                        <input type="text" class="input-fields" placeholder="Location" name="location" required>
+                        <div style=" height: auto; width: auto; position: relative;">
+                            <input type="text" class="input-fields" placeholder="Location" name="location" id="locationInput"required>
+                            <input type="hidden" id="latitude" name="latitude">
+                            <input type="hidden" id="longitude" name="longitude">
+                            <button type="button" id="location-button" onclick="openMap()"></button>
+                        </div>  
                         <select id="" name="category" required>
                             <option value="" selected disabled>Category</option>
                             <option value="0">Gears & Equipment</option>
@@ -224,7 +244,7 @@ if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") 
                         <textarea id="" cols="30" rows="2" placeholder="Description" style="resize: none; width: 100%;" name="description" required></textarea>
                         <div style="color: #888; font-size: small;">
                             <p>Policy and Agreement</p>
-                            <p> By listing an item on [Marketplace Name], you agree to provide accurate and
+                            <p> By listing an item on JOYn Marketplace, you agree to provide accurate and
                                 honest details about yourself and the item. Listings must not include illegal, 
                                 counterfeit, stolen, or unsafe products. Misleading descriptions, photos, or pricing 
                                 are not allowed. You are fully responsible for your item, including delivery and legal 
@@ -240,7 +260,11 @@ if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") 
             </form> 
         </div>
     </div>
-
+    <div id="overlay" onclick="closeMap()"></div>
+        <div id="mapModal">
+            <input type="text" id="mapSearch" placeholder="Search location..." onkeydown="if(event.key==='Enter') searchMap()">
+        <div id="map"></div>
+    </div>
     <script>
         let currentSlideIndex = 0;
         let images = [];
@@ -301,5 +325,9 @@ if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") 
         }
         });
     </script>
+
 </body>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" type="text/css" href="../css/location-picker.css"> 
+
 </html>

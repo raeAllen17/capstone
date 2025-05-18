@@ -3,7 +3,32 @@ session_start();
 require_once 'includes/dbCon.php';
 require_once 'includes/activity_store.php';
 require_once 'includes/formHandler.php';
-$data = displayActivity($pdo);
+
+// Capture filter values from the form submission
+$price = isset($_POST['price']) ? $_POST['price'] : '';
+$date = isset($_POST['date']) ? $_POST['date'] : '';
+$distance = isset($_POST['distance']) ? $_POST['distance'] : '';
+$availability = isset($_POST['availability']) && $_POST['availability'] == 'yes' ? 'yes' : '';
+// Display activities with filters passed
+$data = displayActivity($pdo, $price, $date, $distance, $availability);
+
+// Check if the form data was received via POST
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+    // Process filters
+    $price = isset($_POST['price']) ? $_POST['price'] : '';
+    $date = isset($_POST['date']) ? $_POST['date'] : '';
+    $distance = isset($_POST['distance']) ? $_POST['distance'] : '';
+    $availability = isset($_POST['availability']) && $_POST['availability'] == 'yes' ? 'yes' : '';
+
+    // Call the function to display filtered activities
+    $data = displayActivity($pdo, $price, $date, $distance, $availability);
+
+    // Output only the table HTML for AJAX response
+    include('../html/includes/activity_table.php');  // Include a separate file with just the table rendering
+    exit(); // End the script to avoid further output
+}
+
 
 if(isset($_SESSION['id'])){
     $userId = $_SESSION['id']; 
@@ -24,7 +49,7 @@ if(isset($_SESSION['id'])){
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <link rel="stylesheet" type="text/css" href="../css/nav_styles.css"> 
-
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
         table {
             width: 100%;
@@ -86,37 +111,40 @@ if(isset($_SESSION['id'])){
     </nav> 
 
     <div class="container" style=" padding-top: 7vh; display: grid; place-items: center;height: 100%; ">
-        <div style=" padding: 40px; height: 100%; background-color: lightslategray ; width: 100%; background: linear-gradient(to right, #A8D5BA, #B7E0A7, #C4E1D4, #F0E5D8);">
+        <div style=" padding: 40px; height: 100%; background-color: lightslategray ; width: 100%; background: linear-gradient(to right, #89CFF0, #A7C7E7);">
             <div style="width: 100%; display: grid; place-content: center;">
                 <h1 style=" font-size: 2.8em; margin-bottom: 10px; color: azure     ;">Select and join the <br> adventure now!</h1>
                 <div>
-                    <form action="" method= "POST" style=" display: flex; align-items: center; justify-content: space-between;">
+                    <form action="" id="filter-form" method= "POST" style=" display: flex; align-items: center; justify-content: space-between;">
                         <div style="padding: 2vw; display: flex; align-items: center; justify-content: space-between; color: whitesmoke; gap: 2vw;">
                             <span>Sort by:</span>
                             <div>   
                                 <label for="price-select">Price:</label>
-                                <select name="" id="price-select" class="sort-select" >
-                                    <option value="">Low to High</option>
-                                    <option value="">High to Low</option>
+                                <select name="price" id="price-select" class="sort-select">
+                                    <option value="">-- Select Price --</option>
+                                    <option value="low-high">Low to High</option>
+                                    <option value="high-low">High to Low</option>
                                 </select>
-                            </div> 
+                            </div>  
                             <div>
                                 <label for="date-select">Date:</label>
-                                <select name="" id="date-select" class="sort-select">
-                                    <option value="">Soon</option>
-                                    <option value="">Later</option>
+                                <select name="date" id="date-select" class="sort-select">
+                                    <option value="">-- Select Date --</option>
+                                    <option value="soon">Soon</option>
+                                    <option value="later">Later</option>
                                 </select>
                             </div> 
                             <div>
-                                <label for="distance-select">Date:</label>
-                                <select name="" id="distance-select" class="sort-select">
-                                    <option value="">Longest</option>
-                                    <option value="">Shortest</option>
+                                <label for="distance-select">Distance:</label>
+                                <select name="distance" id="distance-select" class="sort-select">
+                                    <option value="">-- Select Distance --</option>
+                                    <option value="longest">Longest</option>
+                                    <option value="shortest">Shortest</option>
                                 </select>
                             </div>
-                            <div style=" display: flex; align-items: center; gap: 0.5vw;">
+                            <div style="display: flex; align-items: center; gap: 0.5vw;">
                                 <p>Availability:</p>
-                                <input type= "checkbox" style="height: 20px; width: 20px;">
+                                <input type="checkbox" name="availability" value="yes" style="height: 20px; width: 20px;">
                             </div>
                         </div>
                         <div style=" padding: 0vw 2vw;">
@@ -126,8 +154,7 @@ if(isset($_SESSION['id'])){
                         </div>               
                     </form>                        
                 </div>
-                <div style=" min-width: 1400px; height: 600px; padding: 20px; border: 2px solid black; border-radius: 20px; background-color:white;">
-                    <!-- php data here-->
+                <div id="results" style=" min-width: 1400px; height: 600px; padding: 20px; border: 2px solid black; border-radius: 20px; background-color:white;">
                 <table>
                     <thead>
                     <tr>
@@ -144,7 +171,7 @@ if(isset($_SESSION['id'])){
                     <?php if ($data['success']):?>
                         <?php foreach( $data['data'] as $row):?>
                             <tr>
-                                <td><?php echo htmlspecialchars($row['activity_name']); ?></tdstlye>
+                                <td><?php echo htmlspecialchars($row['activity_name']); ?></td>
                                 <td><?php echo htmlspecialchars($row['location']); ?></td>
                                 <td><?php $date = new DateTime($row['date']); echo $date->format('F j, Y');?></td>
                                 <td><?php echo htmlspecialchars($row['distance']); ?></td>
@@ -171,6 +198,37 @@ if(isset($_SESSION['id'])){
     </div>
 
     <script>
+    $(document).ready(function () {
+    $('#filter-form select, #filter-form input[type="checkbox"]').on('change', function (event) {
+        event.preventDefault();
+
+        const changedInput = $(this).attr('name');
+
+        // Reset all filters except the one that was just changed
+        $('#filter-form select, #filter-form input[type="checkbox"]').each(function () {
+            if ($(this).attr('name') !== changedInput) {
+                if ($(this).is('select')) {
+                    $(this).val(''); // Reset dropdown
+                } else if ($(this).is(':checkbox')) {
+                    $(this).prop('checked', false); // Uncheck checkbox
+                }
+            }
+        });
+
+        // Send updated form via AJAX
+        $.ajax({
+            url: '', // Same page
+            method: 'POST',
+            data: $('#filter-form').serialize(),
+            success: function (response) {
+                $('#results').html(response); // Replace table
+            },
+            error: function () {
+                alert("There was an error processing your request.");
+            }
+        });
+    });
+});
     </script>
 </body>
 </html>

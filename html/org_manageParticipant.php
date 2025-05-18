@@ -39,6 +39,7 @@ $actives = getActiveParticipants($pdo, $userId, $activityId);
 $refunds = getRefundRequest($pdo, $userId, $activityId);
 $activities = getactivities($pdo, $activityId);
 $activityName = $activities['activity_name'];
+$activityDate = $activities['date'];
 
 //implode values with comma or space from activities
 $distance_value = '';
@@ -137,7 +138,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                     $lastName = $result['lastName'];
     
                     $subject = "Your activity $activityName happening soon!";
-                    $message = "Dear $firstName $lastName,<br><br>We would like to inform you about your participation in the activity <strong>$activityName</strong>.<br><br>Best regards,<br>JOYn";
+                    $message = "Dear $firstName $lastName,<br><br>We would like to inform you about your participation in the activity <strong>$activityName</strong> - $activityDate.<br><br>Best regards,<br>JOYn";
     
                     if ($email) {
                         sendActivityReminderEmail($email, $subject, $message);
@@ -162,7 +163,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                 $lastName = $result['lastName'];
     
                 $subject = "Your activity $activityName happening soon!";
-                $message = "Dear $firstName $lastName,<br><br>We would like to inform you about your participation in the activity <strong>$activityName</strong>.<br><br>Best regards,<br>JOYn";
+                $message = "Dear $firstName $lastName,<br><br>We would like to inform you about your participation in the activity <strong>$activityName</strong> - $activityDate.<br><br>Best regards,<br>JOYn";
     
                 if ($email) {
                     sendActivityReminderEmail($email, $subject, $message);
@@ -467,12 +468,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                                 <?php foreach ($actives as $active): ?>
                                     <tr>
                                         <td style="text-align: left;"><?php echo htmlspecialchars($active['firstName'] . ' ' . $active['lastName']); ?></td>
+                                        <td style="text-align: left;"><?php echo htmlspecialchars($active['pickup_location']) ?></td>
+                                        <td style="text-align: left;"><?php echo htmlspecialchars($active['contactNumber']) ?></td>
                                         <td>
                                             <form action="" method="POST" enctype="multipart/form-data">
                                                 <input type="hidden" name="participant_id" value="<?php echo htmlspecialchars($active['participant_id']); ?>">
                                                 <input type="hidden" name="activity_id" value="<?php echo htmlspecialchars($activityId); ?>">
-                                                <button class="button-buttons" name="remove" style="background: url('../imgs/icon_cross.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button>
-                                                <button class="button-buttons" name="notify_date" style="background: url('../imgs/icon_check.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> 
+                                                <!-- <button class="button-buttons" name="remove" style="background: url('../imgs/icon_cross.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> -->
+                                                <button class="button-buttons" name="notify_date" style="background: url('../imgs/icon_bell.png'); background-size: cover; background-position: center; height: 30px; width: 30px;"></button> 
                                             </form>                                            
                                         </td>
                                     </tr>
