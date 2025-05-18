@@ -223,8 +223,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
             'participants'      => $_POST['participants'],
             'pickup_locations'  => $_POST['pickup_locations'],
         ];
-    
+
         $result = updateActivityDetails($pdo, $userId, $activityId, $data);
+
+        if (!empty($result['success']) && !empty($result['data']['date_changed'])) {
+            if (isset($actives) && is_array($actives)) {
+                foreach ($actives as $active) {
+                    $participantId = $active['participant_id'];
+                    $result = getParticipantEmail($pdo, $participantId); 
+        
+                    if ($result && isset($result['email'], $result['firstName'], $result['lastName'])) {
+                        $email = $result['email'];
+                        $firstName = $result['firstName'];
+                        $lastName = $result['lastName'];
+        
+                        $subject = "Your activity $activityName has been rescheduled!";
+                        $message = "Dear $firstName $lastName,<br><br>We would like to inform you about your participation in the activity <strong>$activityName</strong> has been rescheduled to - $activityDate.<br><br>Best regards,<br>JOYn";
+        
+                        if ($email) {
+                            sendActivityReminderEmail($email, $subject, $message);
+                            $_SESSION['success_message'] = "All users notified.";
+                            header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
+                            exit();
+                        }
+                    } else {
+                        echo "Could not retrieve email for participant ID: $participantId.";
+                    }
+                }
+            } else {
+                echo "No active participants found.";
+            }
+        }
+
         header("Location: " . $_SERVER['PHP_SELF'] . "?id=" . urlencode($activityId));
         exit();
         
@@ -434,7 +464,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                                                 $imgData = base64_encode($participant['image']);
                                                 $src = 'data:image/jpeg;base64,' . $imgData;
                                                 ?> 
-                                                <img src="<?php echo $src; ?>" alt="Participant Image" style="max-width:100px; max-height:100px;">
+                                                <a href="<?php echo $src; ?>" target="_blank">
+                                                    <img src="<?php echo $src; ?>" alt="Participant Image" style="max-width:100px; max-height:100px; cursor: pointer;">
+                                                </a>
                                             <?php else: ?>
                                                 No image
                                             <?php endif; ?>

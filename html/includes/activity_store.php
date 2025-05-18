@@ -787,20 +787,37 @@ function updateActivityDetails($pdo, $userId, $activityId, $data) {
         'success' => false,
         'error_message' => '',
         'success_message' => '',
-        'data' => []
+        'data' => [],
     ];
 
     try {
+        // Fetch existing activity
+        $fetchSql = "SELECT date FROM activities WHERE id = :activity_id AND org_id = :user_id";
+        $fetchStmt = $pdo->prepare($fetchSql);
+        $fetchStmt->bindParam(':activity_id', $activityId, PDO::PARAM_INT);
+        $fetchStmt->bindParam(':user_id', $userId, PDO::PARAM_INT);
+        $fetchStmt->execute();
+        $existing = $fetchStmt->fetch(PDO::FETCH_ASSOC);
 
-        $activityDate = new DateTime($data['date']);
-        $today = new DateTime();
-        $today->setTime(0, 0);
-
-        if ($activityDate < $today) {
-            $_SESSION['error_message'] = 'Activity date cannot be set in past date.';
+        if (!$existing) {
+            $_SESSION['error_message'] = 'Activity not found.';
             return $result;
         }
 
+        // Date validation and change detection
+        $newDate = new DateTime($data['date']);
+        $existingDate = new DateTime($existing['date']);
+        $today = new DateTime();
+        $today->setTime(0, 0);
+
+        if ($newDate < $today) {
+            $_SESSION['error_message'] = 'Activity date cannot be set in the past.';
+            return $result;
+        }
+
+        $isDateChanged = $newDate != $existingDate;
+
+        // Update query
         $sql = "UPDATE activities SET 
                     activity_name = :activity_name,
                     description = :description,
@@ -831,13 +848,17 @@ function updateActivityDetails($pdo, $userId, $activityId, $data) {
             if ($stmt->rowCount() > 0) {
                 $result['success'] = true;
                 $_SESSION['success_message'] = 'Activity updated successfully.';
-                $result['data'] = ['activity_id' => $activityId];
+                $result['data'] = [
+                    'activity_id' => $activityId,
+                    'date_changed' => $isDateChanged
+                ];
             } else {
                 $_SESSION['error_message'] = 'Activity failed to upload, check input values.';
             }
         } else {
             $_SESSION['error_message'] = 'Failed to execute update statement.';
         }
+
     } catch (PDOException $e) {
         error_log("Activity update failed: " . $e->getMessage());
         $_SESSION['error_message'] = 'Database error: ' . $e->getMessage();
