@@ -79,7 +79,7 @@ if (isset($_SESSION['success_message']) && $_SESSION['success_message'] !== "") 
             left: 0;
             width: 100%;
             height: 100%;       
-            background-image: url('http://localhost/JOYN/JOYn/imgs/landpage_bg.jpg');
+            background-image: url('../imgs/landpage_bg.jpg');
             background-size: cover;
             background-position: center;
         }

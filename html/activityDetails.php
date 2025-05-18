@@ -144,6 +144,7 @@ $qrCodeData = displayQRCodes($pdo, $org_id);
                     <li><a href="joiner_activityPage.php" id="act-nav">Activity</a></li>
                     <li><a href="joiner_forumPage.php" id="forum-nav" >Forum</a></li>
                     <li><a href="joiner_marketplace.php" id="marketplace-nav">Marketplace</a></li>                    
+                    <li><a href="joiner_notification.php" id="marketplace-nav">Notification</a></li>                    
                 </ul>
             </div>
             <div class="nav_right"> 
